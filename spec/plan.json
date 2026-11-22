@@ -1,0 +1,139 @@
+{
+ "meta": {
+  "title": "Attico Liberty - Via Dante 28, Palermo",
+  "address": "Via Dante 28, 90141 Palermo, angolo via Principe di Villafranca (sopra il negozio Expert, di fronte a Palazzo Ziino)",
+  "floor": 7,
+  "stair": "Scala B",
+  "ceilingHeight": 3.0,
+  "units": "m",
+  "snap": 0.05,
+  "axes": {"x": "+x lungo via Dante verso i monti (ovest-sud-ovest); -x verso il Politeama", "y": "alto, pavimento finito a quota 0", "z": "+z verso via Dante (facciata con la terrazza); -z verso il retro (cucina, camere, sole)"},
+  "rectFormat": "[x0, z0, x1, z1] con x0<x1 e z0<z1",
+  "spaceFields": "label = punto dove scrivere il nome in pianta (puo cadere su un mobile); spawn = punto libero dove arriva il visitatore con teleport(id)",
+  "scale": {"pxPerMeter": 35, "originPx": [60, 520], "tolerance": "circa 5 percento: la planimetria non riporta quote"},
+  "orientation": {"facadeNormal": "+z", "bearings": {"+z": 330, "+x": 240, "-z": 150, "-x": 60}, "note": "la terrazza su via Dante guarda a nord-nord-ovest; il retro (cucina, camere, bagni) guarda a sud-sud-est e prende il sole di giorno; il sole tramonta verso +x e +z, sui monti in fondo alla via. Fonti: bussola della planimetria, foto dell'annuncio (sole dietro l'edificio, monti in fondo alla via)"},
+  "listing": {"commercialArea": 240, "rooms": 8, "year": 1970, "note": "unico al piano; terrazza in parte coperta"},
+  "totals": {"interni": 196.3, "esterni": 65.5}
+ },
+ "footprint": [
+  [8.4, 2.1, 15.2, 8.6],
+  [15.0, 0.3, 17.65, 5.55],
+  [14.9, 5.35, 18.9, 8.6],
+  [17.45, 2.6, 28.85, 8.6],
+  [17.45, 1.05, 19.75, 2.6],
+  [2.1, 8.35, 28.85, 12.5]
+ ],
+ "rooms": [
+  {"id": "pianerottolo", "name": "Pianerottolo", "zone": "comune", "kind": "common", "rects": [[15.2, 4.15, 17.45, 5.35]], "label": [16.3, 4.75], "planLabel": "pianerottolo scala B", "area": 2.7, "dims": "2.25 x 1.20 m", "spawn": [16.3, 4.75]},
+  {"id": "ingresso", "name": "Ingresso", "zone": "giorno", "kind": "interior", "rects": [[16.35, 5.55, 18.9, 8.5]], "label": [17.6, 6.9], "planLabel": "(senza etichetta)", "area": 7.52, "dims": "2.55 x 2.95 m", "spawn": [17.6, 6.9]},
+  {"id": "corridoio", "name": "Galleria", "zone": "notte", "kind": "interior", "rects": [[18.9, 7.35, 26.0, 8.5], [25.0, 6.05, 26.0, 7.35]], "label": [22.4, 7.92], "planLabel": "dis.", "area": 9.47, "dims": "7.10 x 1.15 m piu 1 appendice", "spawn": [22.4, 7.9]},
+  {"id": "salotto", "name": "Salotto", "zone": "giorno", "kind": "interior", "rects": [[12.25, 8.6, 19.8, 12.25], [12.25, 7.25, 16.25, 8.6]], "label": [15.2, 10.6], "planLabel": "(senza etichetta)", "area": 32.7, "dims": "7.55 x 3.65 m piu 1 appendice", "spawn": [15.2, 10.6]},
+  {"id": "sala_pranzo", "name": "Sala da pranzo", "zone": "giorno", "kind": "interior", "rects": [[19.9, 8.6, 23.8, 12.25]], "label": [21.85, 11.6], "planLabel": "(senza etichetta)", "area": 14.24, "dims": "3.90 x 3.65 m", "spawn": [21.85, 11.85]},
+  {"id": "cucina", "name": "Cucina", "zone": "giorno", "kind": "interior", "rects": [[17.65, 2.8, 21.25, 5.45], [19.0, 5.45, 21.25, 7.2]], "label": [19.4, 4.9], "planLabel": "cucina", "area": 13.48, "dims": "3.60 x 2.65 m piu 1 appendice", "spawn": [19.4, 5.1]},
+  {"id": "lavanderia", "name": "Lavanderia", "zone": "servizi", "kind": "interior", "rects": [[17.65, 1.2, 19.65, 2.6]], "label": [18.65, 2.1], "planLabel": "lav.", "area": 2.8, "dims": "2.00 x 1.40 m", "spawn": [19.0, 2.15]},
+  {"id": "camera2", "name": "Camera da letto", "zone": "notte", "kind": "interior", "rects": [[21.35, 2.8, 24.85, 7.2]], "label": [22.6, 5.6], "planLabel": "(senza etichetta)", "area": 15.4, "dims": "3.50 x 4.40 m", "spawn": [22.4, 5.6]},
+  {"id": "bagno2", "name": "Bagno", "zone": "notte", "kind": "interior", "rects": [[25.0, 2.8, 26.45, 5.95]], "label": [25.95, 4.6], "planLabel": "wc", "area": 4.57, "dims": "1.45 x 3.15 m", "spawn": [25.5, 4.6]},
+  {"id": "camera_baronale", "name": "Camera baronale", "zone": "notte", "kind": "interior", "rects": [[23.9, 8.6, 28.55, 12.25]], "label": [25.3, 10.4], "planLabel": "(senza etichetta)", "area": 16.97, "dims": "4.65 x 3.65 m", "spawn": [25.3, 10.4]},
+  {"id": "cabina_armadio", "name": "Cabina armadio", "zone": "notte", "kind": "interior", "rects": [[26.55, 6.8, 27.8, 8.5]], "label": [27.15, 7.65], "planLabel": "dis.", "area": 2.12, "dims": "1.25 x 1.70 m", "spawn": [27.15, 7.65]},
+  {"id": "bagno_baronale", "name": "Bagno baronale", "zone": "notte", "kind": "interior", "rects": [[26.55, 2.8, 28.55, 6.7]], "label": [27.5, 4.6], "planLabel": "wc", "area": 7.8, "dims": "2.00 x 3.90 m", "spawn": [27.5, 5.3]},
+  {"id": "gran_salone", "name": "Gran salone", "zone": "giorno", "kind": "interior", "rects": [[2.35, 8.6, 12.15, 12.25], [8.65, 7.6, 10.7, 8.6], [10.7, 7.25, 12.15, 8.6]], "label": [7.2, 11.3], "planLabel": "(senza etichetta)", "area": 39.74, "dims": "9.80 x 3.65 m piu 2 appendici", "spawn": [7.2, 11.3]},
+  {"id": "disimpegno_studio", "name": "Disimpegno dello studio", "zone": "ala_studio", "kind": "interior", "rects": [[11.55, 5.1, 12.95, 7.15], [8.65, 6.35, 11.55, 7.15], [8.65, 7.15, 10.6, 7.5]], "label": [12.25, 6.2], "planLabel": "dis.", "area": 5.87, "dims": "1.40 x 2.05 m piu 2 appendici", "spawn": [12.25, 6.2]},
+  {"id": "studio", "name": "Studio", "zone": "ala_studio", "kind": "interior", "rects": [[8.65, 2.3, 11.45, 6.25]], "label": [10.2, 4.6], "planLabel": "(senza etichetta)", "area": 11.06, "dims": "2.80 x 3.95 m", "spawn": [10.2, 4.6]},
+  {"id": "toilette", "name": "Toilette ospiti", "zone": "ala_studio", "kind": "interior", "rects": [[11.55, 2.3, 12.95, 5.0]], "label": [12.25, 3.9], "planLabel": "wc", "area": 3.78, "dims": "1.40 x 2.70 m", "spawn": [12.05, 3.9]},
+  {"id": "guardaroba", "name": "Guardaroba", "zone": "ala_studio", "kind": "interior", "rects": [[13.05, 2.3, 15.0, 5.35], [13.05, 5.35, 14.7, 6.0]], "label": [13.9, 4.2], "planLabel": "(senza etichetta)", "area": 7.02, "dims": "1.95 x 3.05 m piu 1 appendice", "spawn": [13.9, 4.2]},
+  {"id": "ripostiglio", "name": "Ripostiglio", "zone": "ala_studio", "kind": "interior", "rects": [[13.05, 6.1, 14.7, 7.15]], "label": [13.9, 6.65], "planLabel": "rip.", "area": 1.73, "dims": "1.65 x 1.05 m", "spawn": [13.9, 6.65]}
+ ],
+ "outdoor": [
+  {"id": "terrazza", "name": "Terrazza su via Dante", "rects": [[0.45, 12.5, 28.85, 13.75], [4.6, 13.75, 23.6, 14.5]], "label": [14.1, 13.6], "covered": [[0.45, 12.5, 28.85, 13.75], [4.6, 13.75, 23.6, 14.5]], "enclosure": "ringhiera", "railings": [[0.45, 12.5, 0.45, 13.75], [0.45, 13.75, 4.6, 13.75], [4.6, 13.75, 4.6, 14.5], [4.6, 14.5, 23.6, 14.5], [23.6, 13.75, 23.6, 14.5], [23.6, 13.75, 28.85, 13.75], [28.85, 12.5, 28.85, 13.75]], "area": 49.27, "dims": "28.40 x 1.25 m piu 1 appendice", "spawn": [14.1, 12.95]},
+  {"id": "giardino_inverno", "name": "Giardino d'inverno", "rects": [[8.6, 0.65, 15.0, 2.1]], "label": [11.8, 1.4], "covered": [[8.6, 0.65, 15.0, 2.1]], "enclosure": "veranda", "railings": [[8.6, 0.65, 15.0, 0.65], [8.6, 0.65, 8.6, 2.1]], "area": 9.28, "dims": "6.40 x 1.45 m", "spawn": [12.05, 1.6]},
+  {"id": "balcone_cucina", "name": "Balcone della cucina", "rects": [[19.75, 1.05, 24.25, 2.6]], "label": [22.0, 1.8], "covered": [[19.75, 1.05, 24.25, 2.6]], "enclosure": "ringhiera", "railings": [[19.75, 1.05, 24.25, 1.05], [24.25, 1.05, 24.25, 2.6]], "area": 6.98, "dims": "4.50 x 1.55 m", "spawn": [22.0, 1.8]}
+ ],
+ "openings": [
+  {"id": "p_ingresso", "type": "entry", "rect": [16.55, 5.35, 17.4, 5.55], "wallAlong": "x", "width": 0.85, "sill": 0.0, "head": 2.3, "walk": true, "from": "pianerottolo", "to": "ingresso", "shape": "rettangolo", "spring": 0.0, "note": "portoncino d'ingresso (freccia in planimetria)", "leaves": {"room": "ingresso", "list": [{"hinge": [16.55, 5.55], "tip": [16.476, 6.397], "angle": 95.0}]}},
+  {"id": "p_servizio", "type": "service", "rect": [17.45, 4.35, 17.65, 5.15], "wallAlong": "z", "width": 0.8, "sill": 0.0, "head": 2.2, "walk": true, "from": "pianerottolo", "to": "cucina", "shape": "rettangolo", "spring": 0.0, "note": "ingresso di servizio in cucina (freccia in planimetria)", "leaves": {"room": "cucina", "list": [{"hinge": [17.65, 5.15], "tip": [18.438, 5.289], "angle": 100.0}]}},
+  {"id": "p_salotto", "type": "double_door", "rect": [16.6, 8.5, 18.6, 8.6], "wallAlong": "x", "width": 2.0, "sill": 0.0, "head": 2.45, "walk": true, "from": "ingresso", "to": "salotto", "shape": "arco", "spring": 1.85, "note": "arco ribassato esistente (foto dell'annuncio), luce 2,00 m; in stile Liberty riceve una vetrata a due ante", "leaves": null},
+  {"id": "v_salone_salotto", "type": "arch", "rect": [12.15, 9.45, 12.25, 11.3], "wallAlong": "z", "width": 1.85, "sill": 0.0, "head": 2.45, "walk": true, "from": "gran_salone", "to": "salotto", "shape": "arco", "spring": 1.85, "note": "varco dell'infilata 1,85 m, reso ad arco come quello dell'ingresso", "leaves": null},
+  {"id": "v_salotto_pranzo", "type": "arch", "rect": [19.8, 9.35, 19.9, 11.2], "wallAlong": "z", "width": 1.85, "sill": 0.0, "head": 2.45, "walk": true, "from": "salotto", "to": "sala_pranzo", "shape": "arco", "spring": 1.85, "note": "varco dell'infilata 1,85 m, reso ad arco come quello dell'ingresso", "leaves": null},
+  {"id": "p_pranzo", "type": "door", "rect": [20.0, 8.5, 20.85, 8.6], "wallAlong": "x", "width": 0.85, "sill": 0.0, "head": 2.3, "walk": true, "from": "corridoio", "to": "sala_pranzo", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "sala_pranzo", "list": [{"hinge": [20.0, 8.6], "tip": [20.0, 9.45], "angle": 90.0}]}},
+  {"id": "p_cucina", "type": "door", "rect": [20.0, 7.2, 20.85, 7.35], "wallAlong": "x", "width": 0.85, "sill": 0.0, "head": 2.3, "walk": true, "from": "corridoio", "to": "cucina", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "cucina", "list": [{"hinge": [20.85, 7.2], "tip": [20.998, 6.363], "angle": 100.0}]}},
+  {"id": "p_camera2", "type": "door", "rect": [21.6, 7.2, 22.4, 7.35], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.3, "walk": true, "from": "corridoio", "to": "camera2", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "camera2", "list": [{"hinge": [21.6, 7.2], "tip": [21.461, 6.412], "angle": 100.0}]}},
+  {"id": "p_bagno2", "type": "door", "rect": [25.15, 5.95, 25.9, 6.05], "wallAlong": "x", "width": 0.75, "sill": 0.0, "head": 2.3, "walk": true, "from": "corridoio", "to": "bagno2", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "bagno2", "list": [{"hinge": [25.15, 5.95], "tip": [25.02, 5.211], "angle": 100.0}]}},
+  {"id": "p_baronale", "type": "door", "rect": [24.35, 8.5, 25.15, 8.6], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.3, "walk": true, "from": "corridoio", "to": "camera_baronale", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "camera_baronale", "list": [{"hinge": [24.35, 8.6], "tip": [24.211, 9.388], "angle": 100.0}]}},
+  {"id": "p_cabina", "type": "door", "rect": [26.75, 8.5, 27.55, 8.6], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.3, "walk": true, "from": "cabina_armadio", "to": "camera_baronale", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "camera_baronale", "list": [{"hinge": [27.55, 8.6], "tip": [27.689, 9.388], "angle": 100.0}]}},
+  {"id": "p_bagno_baronale", "type": "door", "rect": [26.75, 6.7, 27.55, 6.8], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.3, "walk": true, "from": "bagno_baronale", "to": "cabina_armadio", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "cabina_armadio", "list": [{"hinge": [26.75, 6.8], "tip": [26.611, 7.588], "angle": 100.0}]}},
+  {"id": "p_disimpegno", "type": "door", "rect": [11.05, 7.15, 11.9, 7.25], "wallAlong": "x", "width": 0.85, "sill": 0.0, "head": 2.3, "walk": true, "from": "disimpegno_studio", "to": "gran_salone", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "gran_salone", "list": [{"hinge": [11.9, 7.25], "tip": [12.048, 8.087], "angle": 100.0}]}},
+  {"id": "p_studio", "type": "door", "rect": [10.4, 6.25, 11.2, 6.35], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.3, "walk": true, "from": "studio", "to": "disimpegno_studio", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "disimpegno_studio", "list": [{"hinge": [10.4, 6.35], "tip": [10.261, 7.138], "angle": 100.0}]}},
+  {"id": "p_toilette", "type": "door", "rect": [12.05, 5.0, 12.8, 5.1], "wallAlong": "x", "width": 0.75, "sill": 0.0, "head": 2.3, "walk": true, "from": "toilette", "to": "disimpegno_studio", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "disimpegno_studio", "list": [{"hinge": [12.8, 5.1], "tip": [12.93, 5.839], "angle": 100.0}]}},
+  {"id": "p_guardaroba", "type": "door", "rect": [12.95, 5.15, 13.05, 5.9], "wallAlong": "z", "width": 0.75, "sill": 0.0, "head": 2.3, "walk": true, "from": "disimpegno_studio", "to": "guardaroba", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "guardaroba", "list": [{"hinge": [13.05, 5.9], "tip": [13.8, 5.9], "angle": 90.0}]}},
+  {"id": "p_ripostiglio", "type": "door", "rect": [12.95, 6.25, 13.05, 6.95], "wallAlong": "z", "width": 0.7, "sill": 0.0, "head": 2.3, "walk": true, "from": "disimpegno_studio", "to": "ripostiglio", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "ripostiglio", "list": [{"hinge": [13.05, 6.25], "tip": [13.739, 6.128], "angle": 100.0}]}},
+  {"id": "p_lavanderia", "type": "door", "rect": [19.65, 1.5, 19.75, 2.3], "wallAlong": "z", "width": 0.8, "sill": 0.0, "head": 2.2, "walk": true, "from": "lavanderia", "to": "balcone_cucina", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "balcone_cucina", "list": [{"hinge": [19.75, 2.3], "tip": [20.538, 2.439], "angle": 100.0}]}},
+  {"id": "pf_studio", "type": "french", "rect": [9.45, 2.1, 10.6, 2.3], "wallAlong": "x", "width": 1.15, "sill": 0.0, "head": 2.5, "walk": true, "from": "giardino_inverno", "to": "studio", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "studio", "list": [{"hinge": [9.45, 2.3], "tip": [9.4, 2.873], "angle": 95.0}, {"hinge": [10.6, 2.3], "tip": [10.65, 2.873], "angle": 95.0}]}},
+  {"id": "pf_cucina", "type": "french", "rect": [19.95, 2.6, 20.95, 2.8], "wallAlong": "x", "width": 1.0, "sill": 0.0, "head": 2.5, "walk": true, "from": "balcone_cucina", "to": "cucina", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "cucina", "list": [{"hinge": [19.95, 2.8], "tip": [19.906, 3.298], "angle": 95.0}, {"hinge": [20.95, 2.8], "tip": [20.994, 3.298], "angle": 95.0}]}},
+  {"id": "pf_camera2", "type": "french", "rect": [22.65, 2.6, 23.85, 2.8], "wallAlong": "x", "width": 1.2, "sill": 0.0, "head": 2.5, "walk": true, "from": "balcone_cucina", "to": "camera2", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "camera2", "list": [{"hinge": [22.65, 2.8], "tip": [22.598, 3.398], "angle": 95.0}, {"hinge": [23.85, 2.8], "tip": [23.902, 3.398], "angle": 95.0}]}},
+  {"id": "f_salone_1", "type": "window", "rect": [2.45, 12.25, 3.45, 12.5], "wallAlong": "x", "width": 1.0, "sill": 0.9, "head": 2.5, "walk": false, "from": "gran_salone", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "finestra, non portafinestra: confermato dalle foto", "leaves": null},
+  {"id": "pf_salone_2", "type": "french", "rect": [5.25, 12.25, 6.05, 12.5], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.5, "walk": true, "from": "gran_salone", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "gran_salone", "list": [{"hinge": [5.25, 12.25], "tip": [5.215, 11.852], "angle": 95.0}, {"hinge": [6.05, 12.25], "tip": [6.085, 11.852], "angle": 95.0}]}},
+  {"id": "f_salone_2", "type": "window", "rect": [6.05, 12.25, 7.25, 12.5], "wallAlong": "x", "width": 1.2, "sill": 0.9, "head": 2.5, "walk": false, "from": "gran_salone", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "pf_salone_3", "type": "french", "rect": [9.4, 12.25, 10.2, 12.5], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.5, "walk": true, "from": "gran_salone", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "gran_salone", "list": [{"hinge": [9.4, 12.25], "tip": [9.365, 11.852], "angle": 95.0}, {"hinge": [10.2, 12.25], "tip": [10.235, 11.852], "angle": 95.0}]}},
+  {"id": "f_salone_3", "type": "window", "rect": [10.2, 12.25, 11.35, 12.5], "wallAlong": "x", "width": 1.15, "sill": 0.9, "head": 2.5, "walk": false, "from": "gran_salone", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "pf_salotto_1", "type": "french", "rect": [13.1, 12.25, 13.9, 12.5], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.5, "walk": true, "from": "salotto", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "salotto", "list": [{"hinge": [13.1, 12.25], "tip": [13.065, 11.852], "angle": 95.0}, {"hinge": [13.9, 12.25], "tip": [13.935, 11.852], "angle": 95.0}]}},
+  {"id": "f_salotto_1", "type": "window", "rect": [13.9, 12.25, 15.05, 12.5], "wallAlong": "x", "width": 1.15, "sill": 0.9, "head": 2.5, "walk": false, "from": "salotto", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "pf_salotto_2", "type": "french", "rect": [16.75, 12.25, 17.55, 12.5], "wallAlong": "x", "width": 0.8, "sill": 0.0, "head": 2.5, "walk": true, "from": "salotto", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "salotto", "list": [{"hinge": [16.75, 12.25], "tip": [16.715, 11.852], "angle": 95.0}, {"hinge": [17.55, 12.25], "tip": [17.585, 11.852], "angle": 95.0}]}},
+  {"id": "f_salotto_2", "type": "window", "rect": [17.55, 12.25, 18.75, 12.5], "wallAlong": "x", "width": 1.2, "sill": 0.9, "head": 2.5, "walk": false, "from": "salotto", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "f_pranzo", "type": "window", "rect": [21.1, 12.25, 22.15, 12.5], "wallAlong": "x", "width": 1.05, "sill": 0.9, "head": 2.5, "walk": false, "from": "sala_pranzo", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "solo finestra: dalle foto la sala da pranzo non ha uscita in terrazza", "leaves": null},
+  {"id": "pf_baronale", "type": "french", "rect": [25.7, 12.25, 26.75, 12.5], "wallAlong": "x", "width": 1.05, "sill": 0.0, "head": 2.5, "walk": true, "from": "camera_baronale", "to": "terrazza", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": {"room": "camera_baronale", "list": [{"hinge": [25.7, 12.25], "tip": [25.654, 11.727], "angle": 95.0}, {"hinge": [26.75, 12.25], "tip": [26.796, 11.727], "angle": 95.0}]}},
+  {"id": "f_toilette", "type": "window", "rect": [11.95, 2.1, 12.6, 2.3], "wallAlong": "x", "width": 0.65, "sill": 1.1, "head": 2.3, "walk": false, "from": "giardino_inverno", "to": "toilette", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "f_guardaroba", "type": "window", "rect": [13.6, 2.1, 14.4, 2.3], "wallAlong": "x", "width": 0.8, "sill": 0.9, "head": 2.3, "walk": false, "from": "giardino_inverno", "to": "guardaroba", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "f_bagno2", "type": "window", "rect": [25.6, 2.6, 26.3, 2.8], "wallAlong": "x", "width": 0.7, "sill": 1.1, "head": 2.3, "walk": false, "from": "_cortile", "to": "bagno2", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "f_bagno_baronale", "type": "window", "rect": [26.7, 2.6, 27.35, 2.8], "wallAlong": "x", "width": 0.65, "sill": 1.1, "head": 2.3, "walk": false, "from": "_cortile", "to": "bagno_baronale", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "f_lavanderia", "type": "window", "rect": [18.35, 1.05, 18.95, 1.2], "wallAlong": "x", "width": 0.6, "sill": 1.4, "head": 2.2, "walk": false, "from": "_cortile", "to": "lavanderia", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null},
+  {"id": "f_scala", "type": "window", "rect": [15.3, 0.3, 16.2, 0.5], "wallAlong": "x", "width": 0.9, "sill": 1.0, "head": 2.3, "walk": false, "from": "_cortile", "to": "_rampe", "shape": "rettangolo", "spring": 0.0, "note": "", "leaves": null}
+ ],
+ "solids": [
+  {"id": "setto_salotto", "type": "stub", "rect": [16.25, 8.6, 16.35, 9.55], "h": 3.0, "note": "setto residuo che divide le due campate del salotto"},
+  {"id": "spalla_nicchia_o", "type": "stub", "rect": [12.25, 8.4, 12.9, 8.6], "h": 3.0, "note": "spalla della nicchia dal lato -x"},
+  {"id": "spalla_nicchia_e", "type": "stub", "rect": [16.1, 8.4, 16.25, 8.6], "h": 3.0, "note": "spalla della nicchia dal lato +x"},
+  {"id": "pilastro_salone", "type": "pilaster", "rect": [8.65, 8.4, 8.85, 8.6], "h": 3.0, "note": "pilastro d'angolo"},
+  {"id": "pilastro_terrazza_1", "type": "pillar", "rect": [4.4, 13.35, 4.6, 13.75], "h": 3.0, "note": "pilastro della loggia"},
+  {"id": "pilastro_terrazza_2", "type": "pillar", "rect": [8.25, 13.35, 8.45, 13.75], "h": 3.0, "note": "pilastro della loggia"},
+  {"id": "pilastro_terrazza_3", "type": "pillar", "rect": [12.2, 13.35, 12.4, 13.75], "h": 3.0, "note": "pilastro della loggia"},
+  {"id": "pilastro_terrazza_4", "type": "pillar", "rect": [15.9, 13.35, 16.1, 13.75], "h": 3.0, "note": "pilastro della loggia"},
+  {"id": "pilastro_terrazza_5", "type": "pillar", "rect": [19.75, 13.35, 19.95, 13.75], "h": 3.0, "note": "pilastro della loggia"},
+  {"id": "pilastro_terrazza_6", "type": "pillar", "rect": [23.6, 13.35, 23.8, 13.75], "h": 3.0, "note": "pilastro della loggia"}
+ ],
+ "builtins": [
+  {"id": "armadio_muro_galleria", "rect": [26.0, 6.05, 26.45, 8.5], "front": "-x", "note": "armadio a muro (diagonale in planimetria)"},
+  {"id": "armadio_muro_cabina", "rect": [27.8, 6.8, 28.55, 8.5], "front": "-x", "note": "armadio a muro (diagonale in planimetria)"}
+ ],
+ "beams": [
+  {"id": "trave_salone", "room": "gran_salone", "rect": [8.65, 8.6, 8.85, 12.25], "y0": 2.6, "note": "trave ribassata tra le due campate del gran salone: oggi sotto c'è un tramezzo con porta scorrevole (foto), qui rimosso"},
+  {"id": "trave_nicchia", "room": "salotto", "rect": [12.9, 8.4, 16.1, 8.6], "y0": 2.5, "note": "architrave ribassato sul fronte della nicchia del salotto (foto)"}
+ ],
+ "stairs": {
+  "rect": [15.2, 0.5, 17.45, 4.15],
+  "halfLanding": [15.2, 0.5, 17.45, 1.45],
+  "flights": [
+   {"id": "rampa_salita", "rect": [15.2, 1.45, 16.2, 4.15], "treads": 9, "direction": "sale andando verso -z, da quota 0 a +1,65"},
+   {"id": "rampa_discesa", "rect": [16.45, 1.45, 17.45, 4.15], "treads": 9, "direction": "scende andando verso -z, da quota 0 a -1,65"}
+  ],
+  "well": [16.2, 1.45, 16.45, 4.15],
+  "walkable": false
+ },
+ "common": {
+  "elevatorShaft": [14.9, 5.55, 16.15, 7.05],
+  "elevatorDoor": {"x0": 15.35, "x1": 16.05, "z": 5.35, "facing": "-z", "note": "porta ascensore sul pianerottolo, chiusa, solo decorativa"}
+ },
+ "context": {
+  "terraceLevel": 23.0,
+  "blocks": [
+   {"id": "edificio_confinante", "rects": [[-3.0, 0.3, 8.4, 8.35], [-3.0, 8.35, 2.1, 12.5]], "h": 3.0, "note": "unita confinante F.121 P.104 SUB 68: volume neutro, nessun dettaglio"}
+  ],
+  "building": {"floorsBelow": 7, "floorsAbove": 1, "look": "condominio del 1970: intonaco beige, pannelli in klinker bruno tra le finestre, balconi continui con ringhiere scure a bacchette, negozi al piano terra con fascia rossa senza scritte"},
+  "street": {"name": "via Dante", "zNear": 15.0, "zFar": 34.0, "note": "circa 19 m tra i fronti: marciapiedi alberati, due file di auto in sosta, due corsie; prosegue diritta in entrambe le direzioni"},
+  "landmarks": [
+   {"id": "palazzo_ziino", "name": "Palazzo Ziino (via Dante 53)", "rect": [-26.0, 34.0, 6.0, 52.0], "eavesY": -6.0, "ridgeY": -3.0, "note": "di fronte, spostato verso il Politeama: palazzo d'epoca di quattro piani, intonaco rosa, cornici e balconi bianchi, tetto a padiglione in coppi; dalla terrazza se ne vede il tetto"},
+   {"id": "politeama", "name": "Teatro Politeama Garibaldi", "at": [-240.0, 24.0], "note": "in fondo a via Dante verso -x: rotonda con colonne e arco con gruppo scuro in cima; solo sagoma"},
+   {"id": "monte_cuccio", "name": "Monte Cuccio", "at": [900.0, 24.0], "note": "in fondo a via Dante verso +x: monte dal profilo a punta, con altre creste ai lati; va nel fondale"}
+  ],
+  "surroundings": {"acrossStreet": "verso +x palazzi d'epoca ocra e gialli di 4-5 piani con tetti in coppi, più bassi della terrazza; dietro di loro condomini moderni chiari di 8-9 piani", "rear": "verso -z, oltre i balconi del retro: tetti in coppi di edifici bassi (colmi tra y = -14 e y = -8), un condominio grigio, vista aperta fino ai monti", "farTowardMinusX": "in lontananza gru del porto e foschia chiara"}
+ }
+}

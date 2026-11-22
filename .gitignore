@@ -1,0 +1,15 @@
+node_modules/
+out/
+.DS_Store
+.claude/
+spec/riferimenti/
+spec/plan-overlay.png
+agenti/
+workflows/
+AVVIO.md
+task_plan.md
+notes.md
+RAPPORTO-FASE-*.md
+graphify-out/
+.graphifyignore
+__pycache__/

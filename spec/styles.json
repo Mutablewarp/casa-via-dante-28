@@ -1,0 +1,157 @@
+{
+ "default": "liberty",
+ "order": ["liberty", "moderno", "scandinavo"],
+ "fixed": {
+  "note": "da dove ctx.mat.fixed(nome) prende colore e finitura; i percorsi sono relativi allo stile corrente salvo exterior.*",
+  "facade": "exterior.facade", "klinker": "exterior.klinker", "pillar": "exterior.pillars", "soffit": "exterior.soffit",
+  "railing": "exterior.railing.color", "handrail": "exterior.railing.handrail", "verandaFrame": "exterior.verandaFrame",
+  "wallcap": {"color": "#2B2B2E", "roughness": 0.9}, "context": {"color": "#D9D5CC", "roughness": 0.95},
+  "common": "walls.pianerottolo", "trim": "trim.frames", "door": "trim.doors", "builtin": "tokens.wood.secondary piu pannelli tex.tile('tessuto_floreale')",
+  "sill": "tokens.stone.bath", "glass": "tokens.glass.clear", "glassFrosted": "tokens.glass.frosted", "outdoorFloor:<id>": "floors[<id>] cercato in floorDefs"
+ },
+ "exterior": {
+  "note": "parti condominiali, uguali in tutti gli stili, come nelle foto dell'annuncio",
+  "facade": "#E8DDC6", "klinker": {"color": "#A9703F", "ribs": 0.06, "tile": [0.24, 0.48], "roughness": 0.7},
+  "pillars": "#F4F1EA", "soffit": "#F6F3EC", "railing": {"color": "#5A2E22", "handrail": "#6B3A2A", "type": "bacchette verticali ogni 11 cm, corrimano piatto"},
+  "frames": "#8A5A34", "verandaFrame": "#2F4A3F"
+ },
+ "styles": {
+  "liberty": {
+   "name": "Liberty palermitano",
+   "tagline": "Legno di noce, ottone, velluti e pareti a Terre Fiorentine",
+   "wallDefault": "#E9E4D8",
+   "floorDefault": "cementine_semplici",
+   "wallFinish": {"type": "terre_fiorentine", "note": "effetto velato a nuvole, opaco: due toni della stessa terra, contrasto basso, macchie larghe 0,6-1,2 m", "contrast": 0.11, "cloudScale": 0.9, "roughness": 0.92},
+   "walls": {
+    "ingresso": "#D9B982", "corridoio": "#D9B982", "salotto": "#D7A486", "gran_salone": "#E0C388", "sala_pranzo": "#A8B598",
+    "cucina": "#EDE4CD", "lavanderia": "#EDE4CD", "camera2": "#B5C6CE", "bagno2": "#E6E0D0", "camera_baronale": "#CFA998",
+    "cabina_armadio": "#E3D6C2", "bagno_baronale": "#BCCFC2", "disimpegno_studio": "#E0CBA0", "studio": "#8F9E86",
+    "toilette": "#D6C3B0", "guardaroba": "#E8DDC8", "ripostiglio": "#EEE8DA", "pianerottolo": "#E9E4D8"
+   },
+   "wainscot": {"cucina": "maiolica_gialloblu", "bagno2": "maiolica_blu", "bagno_baronale": "marmo_carrara", "toilette": "maiolica_blu", "lavanderia": "piastrella_bianca", "height": 1.35},
+   "floors": {
+    "ingresso": "marmo_scacchiera", "corridoio": "marmo_scacchiera", "salotto": "parquet_spina_noce", "gran_salone": "parquet_spina_noce",
+    "sala_pranzo": "parquet_spina_noce", "cucina": "cementine_stella", "lavanderia": "cementine_semplici", "camera2": "parquet_spina_rovere",
+    "bagno2": "maiolica_pavimento", "camera_baronale": "parquet_spina_rovere", "cabina_armadio": "parquet_spina_rovere",
+    "bagno_baronale": "marmo_scacchiera_verde", "disimpegno_studio": "cementine_semplici", "studio": "parquet_spina_noce",
+    "toilette": "cementine_semplici", "guardaroba": "cementine_semplici", "ripostiglio": "cementine_semplici",
+    "pianerottolo": "marmo_condominio", "terrazza": "cotto_spina", "giardino_inverno": "cotto_spina", "balcone_cucina": "cotto_spina"
+   },
+   "floorDefs": {
+    "marmo_scacchiera": {"kind": "checker", "tile": 0.40, "diagonal": true, "a": "#EFECE6", "b": "#8C8F93", "veins": true, "roughness": 0.22, "border": "#3B3D40"},
+    "marmo_scacchiera_verde": {"kind": "checker", "tile": 0.30, "diagonal": true, "a": "#F1EFEA", "b": "#5C7A6B", "veins": true, "roughness": 0.2},
+    "marmo_condominio": {"kind": "slab", "tile": 0.60, "a": "#B9B7B1", "veins": true, "roughness": 0.3},
+    "parquet_spina_noce": {"kind": "herringbone", "stave": [0.09, 0.45], "a": "#7A5232", "b": "#5E3D24", "grain": true, "roughness": 0.42, "border": "#4A2F1B"},
+    "parquet_spina_rovere": {"kind": "herringbone", "stave": [0.09, 0.45], "a": "#A9825A", "b": "#8E6B47", "grain": true, "roughness": 0.45},
+    "cementine_stella": {"kind": "cementine", "tile": 0.20, "motif": "stella", "colors": ["#EDE4CD", "#C99A3E", "#3F5E7A", "#2E2E2E"], "roughness": 0.55},
+    "cementine_semplici": {"kind": "cementine", "tile": 0.20, "motif": "scacco", "colors": ["#E6DFCF", "#9A9C9A"], "roughness": 0.6},
+    "maiolica_pavimento": {"kind": "cementine", "tile": 0.20, "motif": "fiore", "colors": ["#F3F0E6", "#2F5F9E", "#E0B43C"], "roughness": 0.3},
+    "cotto_spina": {"kind": "herringbone", "stave": [0.12, 0.24], "a": "#B5633E", "b": "#C4784F", "grain": false, "roughness": 0.8}
+   },
+   "ceiling": {"color": "#F6F1E6", "cornice": true, "rose": true},
+   "trim": {"doors": "#F3EDE0", "frames": "#F3EDE0", "skirting": "#F3EDE0", "skirtingHeight": 0.14, "railing": "#5A2E22"},
+   "tokens": {
+    "wood.primary": {"color": "#6B4226", "roughness": 0.42, "grain": true}, "wood.secondary": {"color": "#8A5A34", "roughness": 0.45, "grain": true},
+    "wood.dark": {"color": "#2E1C12", "roughness": 0.35, "grain": true}, "wood.painted": {"color": "#F1EADB", "roughness": 0.5},
+    "metal.accent": {"color": "#B8964A", "roughness": 0.32, "metalness": 1.0}, "metal.iron": {"color": "#1F2422", "roughness": 0.55, "metalness": 0.9},
+    "metal.chrome": {"color": "#D9DCDD", "roughness": 0.12, "metalness": 1.0}, "metal.copper": {"color": "#B66A3C", "roughness": 0.3, "metalness": 1.0},
+    "stone.top": {"color": "#8C8F93", "roughness": 0.25, "veins": true}, "stone.bath": {"color": "#F0EEE9", "roughness": 0.2, "veins": true},
+    "fabric.sofa": {"color": "#2F5D50", "roughness": 0.95, "sheen": "velluto"}, "fabric.armchair": {"color": "#B8862F", "roughness": 0.95, "sheen": "velluto"},
+    "fabric.chair": {"color": "#7A2E3A", "roughness": 0.95, "sheen": "velluto"}, "fabric.bed": {"color": "#EFE6D2", "roughness": 0.9},
+    "fabric.bedAccent": {"color": "#7A2E3A", "roughness": 0.95, "sheen": "velluto"}, "fabric.curtain": {"color": "#7A2E3A", "roughness": 0.95, "sheen": "velluto"},
+    "fabric.sheer": {"color": "#F4EEDF", "roughness": 0.9, "opacity": 0.55}, "fabric.cushionA": {"color": "#C99A3E", "roughness": 0.95},
+    "fabric.cushionB": {"color": "#3F5E7A", "roughness": 0.95}, "fabric.outdoor": {"color": "#EDE4CD", "roughness": 0.9},
+    "fabric.linen": {"color": "#F5F1E8", "roughness": 0.9}, "leather": {"color": "#5A2F1C", "roughness": 0.5},
+    "ceramic.white": {"color": "#F4F2EC", "roughness": 0.18}, "ceramic.pot": {"color": "#B5633E", "roughness": 0.8},
+    "glass.clear": {"color": "#DDE8EA", "roughness": 0.05, "opacity": 0.22}, "glass.frosted": {"color": "#E6EEEE", "roughness": 0.6, "opacity": 0.55},
+    "mirror": {"color": "#C9D2D4", "roughness": 0.04, "metalness": 1.0}, "paper.shade": {"color": "#F2D9A6", "roughness": 0.9, "emissive": "#FFC37A"},
+    "plant.leaf": {"color": "#3E6B3A", "roughness": 0.8}, "plant.leafDark": {"color": "#27482B", "roughness": 0.8},
+    "plant.flowerA": {"color": "#C4387A", "roughness": 0.8}, "plant.flowerB": {"color": "#F1E9D0", "roughness": 0.8},
+    "fruit.lemon": {"color": "#E9C92E", "roughness": 0.6}, "wicker": {"color": "#B08A55", "roughness": 0.85}, "black": {"color": "#161616", "roughness": 0.5},
+    "books": {"color": "#6E3B2A", "roughness": 0.8, "texture": "dorsi_libri"}, "piano": {"color": "#0C0C0C", "roughness": 0.08}
+   },
+   "shape": {"legs": "cabriole", "backs": "curvi", "edges": "arrotondati", "upholstery": "capitonne", "ornament": "colpo_di_frusta",
+             "lampShade": "tulipano_vetro", "chandelier": "ottone_a_bracci_con_tulipani", "handles": "ottone", "bedHead": "sagomata_con_intaglio"},
+   "decor": {"rugs": "persiani", "art": "liberty", "curtains": "velluto_con_velo", "plants": "ricche", "tableSetting": "porcellana_bordo_oro_cristalli", "stainedGlass": true}
+  },
+  "moderno": {
+   "name": "Moderno",
+   "tagline": "Linee nette, rovere, pietra chiara e pochi accenti scuri",
+   "wallFinish": {"type": "pittura_liscia", "contrast": 0.0, "roughness": 0.9},
+   "wallDefault": "#F2EFEA",
+   "walls": {"salotto": "#EDEAE4", "gran_salone": "#EDEAE4", "sala_pranzo": "#D9D5CC", "camera_baronale": "#C9C3BA", "camera2": "#E6E3DD", "studio": "#5E6A6E", "pianerottolo": "#E9E4D8"},
+   "wainscot": {"cucina": "gres_bianco", "bagno2": "gres_bianco", "bagno_baronale": "gres_marmo", "toilette": "gres_bianco", "lavanderia": "gres_bianco", "height": 2.1},
+   "floorDefault": "rovere_doghe_larghe",
+   "floors": {"ingresso": "gres_grande", "corridoio": "gres_grande", "cucina": "gres_grande", "lavanderia": "gres_grande", "bagno2": "gres_grande", "bagno_baronale": "gres_marmo_pav",
+              "toilette": "gres_grande", "pianerottolo": "marmo_condominio", "terrazza": "gres_esterno", "giardino_inverno": "gres_esterno", "balcone_cucina": "gres_esterno"},
+   "floorDefs": {
+    "rovere_doghe_larghe": {"kind": "planks", "stave": [0.20, 1.80], "a": "#B79670", "b": "#A8875F", "grain": true, "roughness": 0.6},
+    "gres_grande": {"kind": "slab", "tile": 0.90, "a": "#B8B6B1", "veins": false, "roughness": 0.4},
+    "gres_marmo_pav": {"kind": "slab", "tile": 0.90, "a": "#ECEAE6", "veins": true, "roughness": 0.2},
+    "gres_esterno": {"kind": "slab", "tile": 0.60, "a": "#9C9A95", "veins": false, "roughness": 0.75},
+    "marmo_condominio": {"kind": "slab", "tile": 0.60, "a": "#B9B7B1", "veins": true, "roughness": 0.3}
+   },
+   "ceiling": {"color": "#FAFAF8", "cornice": false, "rose": false},
+   "trim": {"doors": "#F5F4F1", "frames": "#2B2B2B", "skirting": "#F5F4F1", "skirtingHeight": 0.08, "railing": "#5A2E22"},
+   "tokens": {
+    "wood.primary": {"color": "#8A6A4A", "roughness": 0.6, "grain": true}, "wood.secondary": {"color": "#B79670", "roughness": 0.6, "grain": true},
+    "wood.dark": {"color": "#26221F", "roughness": 0.5, "grain": true}, "wood.painted": {"color": "#F4F3F0", "roughness": 0.45},
+    "metal.accent": {"color": "#1E1E1E", "roughness": 0.45, "metalness": 0.9}, "metal.iron": {"color": "#2B2B2B", "roughness": 0.5, "metalness": 0.9},
+    "metal.chrome": {"color": "#D9DCDD", "roughness": 0.12, "metalness": 1.0}, "metal.copper": {"color": "#8C8C8C", "roughness": 0.3, "metalness": 1.0},
+    "stone.top": {"color": "#F0EEEA", "roughness": 0.22, "veins": true}, "stone.bath": {"color": "#ECEAE6", "roughness": 0.2, "veins": true},
+    "fabric.sofa": {"color": "#B8B4AC", "roughness": 0.95}, "fabric.armchair": {"color": "#A0623A", "roughness": 0.55}, "fabric.chair": {"color": "#3D4A54", "roughness": 0.9},
+    "fabric.bed": {"color": "#F2F0EB", "roughness": 0.9}, "fabric.bedAccent": {"color": "#3D4A54", "roughness": 0.9}, "fabric.curtain": {"color": "#E9E6DF", "roughness": 0.9},
+    "fabric.sheer": {"color": "#FBFAF7", "roughness": 0.9, "opacity": 0.5}, "fabric.cushionA": {"color": "#3D4A54", "roughness": 0.95},
+    "fabric.cushionB": {"color": "#C9A26A", "roughness": 0.95}, "fabric.outdoor": {"color": "#D8D5CE", "roughness": 0.9}, "fabric.linen": {"color": "#F5F4F0", "roughness": 0.9},
+    "leather": {"color": "#A0623A", "roughness": 0.5}, "ceramic.white": {"color": "#F6F5F2", "roughness": 0.18}, "ceramic.pot": {"color": "#3A3A3A", "roughness": 0.7},
+    "glass.clear": {"color": "#DDE8EA", "roughness": 0.05, "opacity": 0.2}, "glass.frosted": {"color": "#E6EEEE", "roughness": 0.6, "opacity": 0.55},
+    "mirror": {"color": "#C9D2D4", "roughness": 0.04, "metalness": 1.0}, "paper.shade": {"color": "#F4F1EA", "roughness": 0.9, "emissive": "#FFD9A8"},
+    "plant.leaf": {"color": "#3E6B3A", "roughness": 0.8}, "plant.leafDark": {"color": "#27482B", "roughness": 0.8}, "plant.flowerA": {"color": "#F1F1EC", "roughness": 0.8},
+    "plant.flowerB": {"color": "#D8D2C2", "roughness": 0.8}, "fruit.lemon": {"color": "#E9C92E", "roughness": 0.6}, "wicker": {"color": "#8C8C8C", "roughness": 0.8},
+    "black": {"color": "#161616", "roughness": 0.5}, "books": {"color": "#D9D5CC", "roughness": 0.8, "texture": "dorsi_libri"}, "piano": {"color": "#0C0C0C", "roughness": 0.08}
+   },
+   "shape": {"legs": "dritte_sottili_metallo", "backs": "squadrati_bassi", "edges": "vivi", "upholstery": "liscia", "ornament": "nessuno",
+             "lampShade": "cilindro_tessuto", "chandelier": "anello_led_o_sfere", "handles": "gola", "bedHead": "pannello_imbottito"},
+   "decor": {"rugs": "tinta_unita_o_geometrici", "art": "astratta", "curtains": "velo_bianco", "plants": "poche_grandi", "tableSetting": "gres_opaco_calici_semplici", "stainedGlass": false}
+  },
+  "scandinavo": {
+   "name": "Scandinavo",
+   "tagline": "Legni chiari, bianco caldo, lana e lino",
+   "wallFinish": {"type": "pittura_liscia", "contrast": 0.0, "roughness": 0.92},
+   "wallDefault": "#F7F6F2",
+   "walls": {"camera2": "#DDE6E3", "camera_baronale": "#E8DED3", "studio": "#D5DDE2", "sala_pranzo": "#EEE9DF", "pianerottolo": "#E9E4D8"},
+   "wainscot": {"cucina": "piastrella_bianca", "bagno2": "piastrella_bianca", "bagno_baronale": "piastrella_bianca", "toilette": "piastrella_bianca", "lavanderia": "piastrella_bianca", "height": 1.5},
+   "floorDefault": "rovere_sbiancato",
+   "floors": {"cucina": "esagoni_chiari", "lavanderia": "esagoni_chiari", "bagno2": "esagoni_chiari", "bagno_baronale": "esagoni_chiari", "toilette": "esagoni_chiari",
+              "pianerottolo": "marmo_condominio", "terrazza": "decking", "giardino_inverno": "decking", "balcone_cucina": "decking"},
+   "floorDefs": {
+    "rovere_sbiancato": {"kind": "planks", "stave": [0.14, 1.20], "a": "#DCC9A8", "b": "#CFBB98", "grain": true, "roughness": 0.65},
+    "esagoni_chiari": {"kind": "hex", "tile": 0.12, "a": "#EFEDE7", "b": "#DAD8D0", "roughness": 0.35},
+    "decking": {"kind": "planks", "stave": [0.12, 2.00], "a": "#A98F6C", "b": "#9A815F", "grain": true, "roughness": 0.8},
+    "marmo_condominio": {"kind": "slab", "tile": 0.60, "a": "#B9B7B1", "veins": true, "roughness": 0.3}
+   },
+   "ceiling": {"color": "#FCFBF8", "cornice": false, "rose": false},
+   "trim": {"doors": "#FAF9F5", "frames": "#FAF9F5", "skirting": "#FAF9F5", "skirtingHeight": 0.08, "railing": "#5A2E22"},
+   "tokens": {
+    "wood.primary": {"color": "#D9BE94", "roughness": 0.65, "grain": true}, "wood.secondary": {"color": "#C8AB7E", "roughness": 0.65, "grain": true},
+    "wood.dark": {"color": "#6E5A45", "roughness": 0.6, "grain": true}, "wood.painted": {"color": "#FAF9F5", "roughness": 0.5},
+    "metal.accent": {"color": "#C9C9C9", "roughness": 0.4, "metalness": 0.9}, "metal.iron": {"color": "#F2F2EF", "roughness": 0.5, "metalness": 0.3},
+    "metal.chrome": {"color": "#D9DCDD", "roughness": 0.12, "metalness": 1.0}, "metal.copper": {"color": "#C98E63", "roughness": 0.35, "metalness": 1.0},
+    "stone.top": {"color": "#F2F0EB", "roughness": 0.3}, "stone.bath": {"color": "#F2F0EB", "roughness": 0.25},
+    "fabric.sofa": {"color": "#E4DED2", "roughness": 0.95}, "fabric.armchair": {"color": "#8FA3AD", "roughness": 0.95}, "fabric.chair": {"color": "#D9D2C4", "roughness": 0.95},
+    "fabric.bed": {"color": "#FAF8F3", "roughness": 0.9}, "fabric.bedAccent": {"color": "#B9C4C0", "roughness": 0.95}, "fabric.curtain": {"color": "#FAF8F3", "roughness": 0.9},
+    "fabric.sheer": {"color": "#FFFFFF", "roughness": 0.9, "opacity": 0.45}, "fabric.cushionA": {"color": "#D9A441", "roughness": 0.95},
+    "fabric.cushionB": {"color": "#8FA3AD", "roughness": 0.95}, "fabric.outdoor": {"color": "#F2EFE6", "roughness": 0.9}, "fabric.linen": {"color": "#FAF8F3", "roughness": 0.9},
+    "leather": {"color": "#C29B6C", "roughness": 0.55}, "ceramic.white": {"color": "#FAF9F5", "roughness": 0.2}, "ceramic.pot": {"color": "#EDEBE4", "roughness": 0.7},
+    "glass.clear": {"color": "#DDE8EA", "roughness": 0.05, "opacity": 0.2}, "glass.frosted": {"color": "#E6EEEE", "roughness": 0.6, "opacity": 0.55},
+    "mirror": {"color": "#C9D2D4", "roughness": 0.04, "metalness": 1.0}, "paper.shade": {"color": "#FBF8F0", "roughness": 0.9, "emissive": "#FFE0B5"},
+    "plant.leaf": {"color": "#4B7A45", "roughness": 0.8}, "plant.leafDark": {"color": "#2F5732", "roughness": 0.8}, "plant.flowerA": {"color": "#F4F0E2", "roughness": 0.8},
+    "plant.flowerB": {"color": "#E6C8C0", "roughness": 0.8}, "fruit.lemon": {"color": "#E9C92E", "roughness": 0.6}, "wicker": {"color": "#D2B98C", "roughness": 0.85},
+    "black": {"color": "#2A2A2A", "roughness": 0.5}, "books": {"color": "#E6E1D6", "roughness": 0.8, "texture": "dorsi_libri"}, "piano": {"color": "#F4F3EF", "roughness": 0.15}
+   },
+   "shape": {"legs": "coniche_legno", "backs": "a_listelli_o_morbidi", "edges": "raggiati", "upholstery": "liscia", "ornament": "nessuno",
+             "lampShade": "carta_o_lino", "chandelier": "sospensione_a_campana_in_legno_o_carta", "handles": "pomolo_legno", "bedHead": "listelli_legno"},
+   "decor": {"rugs": "lana_chiara_a_righe_o_kilim", "art": "botanica_al_tratto", "curtains": "cotone_bianco", "plants": "molte_piccole", "tableSetting": "ceramica_bianca_legno", "stainedGlass": false}
+  }
+ }
+}

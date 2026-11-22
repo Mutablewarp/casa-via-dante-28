@@ -1,0 +1,45 @@
+{
+ "conventions": {
+  "hour": "ora decimale del giorno; il cursore copre da 6.0 a 23.0 con passo 0.05; valore iniziale 10.0",
+  "orientation": "la facciata con la terrazza (+z) guarda a nord-nord-ovest; il retro (-z) guarda a sud-sud-est. Di giorno il sole sta sul retro ed entra in cucina, camera, bagni e studio; nel tardo pomeriggio gira verso +x e al tramonto entra basso nei tre saloni attraverso la terrazza",
+  "az": "azimut in gradi misurato dalla normale di facciata (+z) verso +x. Vale 330 meno la direzione di bussola del sole. NON normalizzare: nei fotogrammi scende da 255 a 35 e va interpolato linearmente cosi com'e",
+  "el": "elevazione in gradi sopra l'orizzonte; sotto 0 il sole non illumina",
+  "direction": "vettore DAL sole VERSO la scena = (-sin(az)*cos(el), -sin(el), -cos(az)*cos(el)), con az ed el in radianti",
+  "check": "alle 10 az = 210: il vettore ha componente z positiva, cioe la luce viaggia dal retro verso via Dante ed entra dalle finestre di cucina e camera. Alle 18.6 az = 45: componente z negativa e x negativa, la luce entra dalla terrazza nei saloni venendo da +x",
+  "interpolation": "ogni grandezza e interpolata tra i due fotogrammi vicini; i colori in spazio lineare; nessun salto",
+  "intensities": "valori di partenza per three r187 con ACESFilmicToneMapping: vanno rifiniti guardando gli screenshot, rispettando i bersagli di luminanza in 04-TEST.md"
+ },
+ "default": 10.0,
+ "range": [6.0, 23.0],
+ "bands": [
+  {"from": 6.0, "to": 11.0, "label": "Mattina"}, {"from": 11.0, "to": 15.0, "label": "Mezzogiorno"}, {"from": 15.0, "to": 18.0, "label": "Pomeriggio"},
+  {"from": 18.0, "to": 19.5, "label": "Tramonto"}, {"from": 19.5, "to": 21.0, "label": "Sera"}, {"from": 21.0, "to": 23.0, "label": "Notte"}
+ ],
+ "keyframes": [
+  {"hour": 6.0, "az": 255, "el": 3, "sunColor": "#FFB07A", "sunI": 0.7, "skyTop": "#5A6FA8", "skyHorizon": "#F2B28C", "hemiSky": "#9FB2D9", "hemiGround": "#6B5A4A", "hemiI": 0.35, "exposure": 1.05, "night": 0.35, "stars": 0.1},
+  {"hour": 8.0, "az": 235, "el": 26, "sunColor": "#FFE2B8", "sunI": 2.4, "skyTop": "#5C9BE0", "skyHorizon": "#CFE3F5", "hemiSky": "#CFE0F7", "hemiGround": "#8A7A66", "hemiI": 0.8, "exposure": 1.0, "night": 0.0, "stars": 0.0},
+  {"hour": 10.0, "az": 210, "el": 48, "sunColor": "#FFF1DC", "sunI": 3.2, "skyTop": "#4E93E0", "skyHorizon": "#D6E8F7", "hemiSky": "#DCE9FA", "hemiGround": "#8F8170", "hemiI": 0.95, "exposure": 1.0, "night": 0.0, "stars": 0.0},
+  {"hour": 12.5, "az": 155, "el": 66, "sunColor": "#FFF8EC", "sunI": 3.6, "skyTop": "#4A8FDE", "skyHorizon": "#DCEBF8", "hemiSky": "#E3EEFB", "hemiGround": "#948776", "hemiI": 1.0, "exposure": 0.95, "night": 0.0, "stars": 0.0},
+  {"hour": 16.0, "az": 80, "el": 40, "sunColor": "#FFE9C4", "sunI": 3.0, "skyTop": "#4F8FD6", "skyHorizon": "#E3E6EC", "hemiSky": "#DDE6F5", "hemiGround": "#8F7F6A", "hemiI": 0.9, "exposure": 1.0, "night": 0.0, "stars": 0.0},
+  {"hour": 18.6, "az": 45, "el": 8, "sunColor": "#FF9A4D", "sunI": 2.3, "skyTop": "#46558F", "skyHorizon": "#FF9E5E", "hemiSky": "#C9A7B0", "hemiGround": "#7A5A3C", "hemiI": 0.55, "exposure": 1.05, "night": 0.15, "stars": 0.0},
+  {"hour": 19.4, "az": 35, "el": -4, "sunColor": "#FF7A3D", "sunI": 0.0, "skyTop": "#232B55", "skyHorizon": "#C7694F", "hemiSky": "#6A6D9A", "hemiGround": "#4A3A30", "hemiI": 0.25, "exposure": 1.1, "night": 0.75, "stars": 0.4},
+  {"hour": 21.0, "az": 30, "el": 35, "sunColor": "#9FB8FF", "sunI": 0.22, "skyTop": "#070B1C", "skyHorizon": "#131A33", "hemiSky": "#2A3560", "hemiGround": "#1A1612", "hemiI": 0.08, "exposure": 1.15, "night": 1.0, "stars": 1.0, "moon": true},
+  {"hour": 23.0, "az": 10, "el": 45, "sunColor": "#9FB8FF", "sunI": 0.22, "skyTop": "#05081A", "skyHorizon": "#0F1530", "hemiSky": "#262F58", "hemiGround": "#1A1612", "hemiI": 0.07, "exposure": 1.15, "night": 1.0, "stars": 1.0, "moon": true}
+ ],
+ "horizonFade": "intensita effettiva del sole = sunI interpolata * smoothstep(0, 4, el): sfuma a zero tra 4 gradi e l'orizzonte, senza salti",
+ "moonSwap": "ora di scambio 20.2: tra 19.4 e 20.2 la luce direzionale resta a intensita 0 con la direzione del sole; a 20.2, a intensita 0, prende direzione e colore della luna (fotogramma delle 21.0); da 20.2 a 21.0 l'intensita sale fino a sunI delle 21.0. Mai un salto visibile",
+ "sun": {"castShadow": true, "shadowMapSize": {"high": 2048, "medium": 1024, "low": 0}, "shadowType": "PCFShadowMap", "shadowUpdate": "renderer.shadowMap.autoUpdate = false; needsUpdate = true solo quando la direzione del sole cambia di piu di 0.2 gradi, dopo furnished, dopo quality:changed e dopo view:changed", "frustum": "ortografico che copre x da -1 a 30, z da 0 a 16, y da -1 a 4; bias da tarare per evitare acne e peter-panning", "radius": 3},
+ "lamps": {
+  "onCurve": "lampOn = smoothstep(0.10, 0.60, night)",
+  "color": "#FFD2A0",
+  "byType": {"chandelier": 16, "pendant": 9, "lantern": 7, "floor_lamp": 6, "table_lamp": 4, "sconce": 3, "outdoor_lantern": 3},
+  "distance": 9, "decay": 2,
+  "maxRealLights": {"high": 12, "medium": 6, "low": 3},
+  "selection": "tra le luci di furnishing.json si accendono per prime quelle con prio 1, poi 2; a parita di prio vince la piu vicina alla camera; le altre restano solo emissive",
+  "shadeEmissive": "il materiale paper.shade ha emissiveIntensity = 2.2 * lampOn",
+  "castShadow": false
+ },
+ "environment": {"method": "PMREM di una piccola scena cielo (cupola a gradiente) rigenerata quando l'ora cambia di piu di 0.25 h, al massimo ogni 500 ms", "sceneIntensity": 0.35, "floorEnvIntensity": 0.6, "glassEnvIntensity": 1.3, "glossyFloorMaxRoughness": 0.35, "note": "in three r187 material.envMapIntensity vale solo se il materiale ha una propria envMap: G assegna la texture PMREM a material.envMap di pavimenti lucidi e vetri; per tutto il resto vale scene.environmentIntensity = sceneIntensity"},
+ "context": {"nightWindows": "le finestre degli edifici di contesto hanno emissiveIntensity = night; i lampioni di via Dante si accendono con lampOn"},
+ "transition": {"easeSeconds": 1.2, "note": "setTime(hour) fissa un bersaglio; l'ora mostrata lo insegue con smorzamento critico, cosi anche un salto del cursore resta fluido"}
+}
