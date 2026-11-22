@@ -34,7 +34,7 @@ Sul telefono: joystick a sinistra per camminare, trascinamento a destra per guar
 
 ## Difetti noti
 
-- Moderno e Scandinavo risultano pallidi e poco contrastati; nel legno chiaro la venatura è a onde larghe.
+- Nel legno chiaro di Moderno e Scandinavo la venatura è a onde larghe. (Il colore pallido e grigio-azzurro di questi due stili è stato corretto dopo il collaudo: meno luce ambiente, cielo dell'emisfero più caldo.)
 - Tra l'isola e le basi della cucina il passaggio è stretto (55-60 cm): è un dato della pianta.
 - Alla prima accensione delle luci serali e al primo cambio di stile può esserci un breve blocco, tra 0,1 e 0,5 s.
 - Il Politeama è solo una sagoma; le piante viste da vicino sono un po' spigolose.

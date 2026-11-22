@@ -25,8 +25,13 @@ const SETTLE_EPS = 0.002 // sotto questa distanza e velocità l'ora si ferma sul
 const TIME_EVENT_STEP = 0.01 // time:changed ogni variazione visibile dell'ora
 const ENV_MOVING_EPS = 0.0005 // ore per fotogramma oltre cui l'ora si considera in movimento
 const FALLBACK_LEVEL = 'high'
-// Stili con pareti e sanitari molto chiari: di giorno l'esposizione scende, per non bruciare verso il bianco-azzurro
-const STYLE_DAY_EXPOSURE = { moderno: 0.8, scandinavo: 0.72 }
+// Stili con pareti molto chiare: di giorno si toglie luce ambiente (emisfero) invece di abbassare tutta l'esposizione,
+// così il sole e le ombre danno contrasto e i bianchi restano bianchi, non grigio-azzurri.
+const STYLE_DAY = { moderno: { exposure: 0.92, hemi: 0.55, env: 0.85 }, scandinavo: { exposure: 0.95, hemi: 0.55, env: 0.6 } }
+// Di giorno il cielo dell'emisfero si scalda verso il bianco caldo: dentro casa la luce rimbalza su muri e pavimenti,
+// e il solo azzurro del cielo rendeva grigio-blu i bianchi e il legno chiaro.
+const DAY_SKY_WARM = '#FFF1DE'
+const DAY_SKY_WARM_MIX = 0.45
 
 /** @param {object} ctx contesto condiviso */
 export function init(ctx) {
@@ -34,12 +39,13 @@ export function init(ctx) {
   const sample = createSampler(THREE, lighting)
   const sun = createSun(ctx, { gain: SUN_GAIN })
   const sky = createSky(ctx)
-  const env = createEnv(ctx, { envGain: ENV_GAIN, floorGain: FLOOR_ENV_GAIN, glassGain: GLASS_ENV_GAIN })
+  const env = createEnv(ctx, { envGain: ENV_GAIN, floorGain: FLOOR_ENV_GAIN, glassGain: GLASS_ENV_GAIN, styleTrim: () => STYLE_DAY[state.style]?.env ?? 1 })
   const lamps = createLamps(ctx, { gain: LAMP_GAIN })
   const hemi = new THREE.HemisphereLight('#ffffff', '#ffffff', 0)
   ctx.groups.lights.add(hemi)
   const ceilingTint = new THREE.Color(CEILING_TINT)
   const nightTint = new THREE.Color(NIGHT_SKY_TINT)
+  const dayWarm = new THREE.Color(DAY_SKY_WARM)
 
   const omega = 3 / lighting.transition.easeSeconds
   let velocity = 0
@@ -62,12 +68,13 @@ export function init(ctx) {
     lampOn = lampOnFromNight(st.night)
     sun.apply(st, st.moonPhase ? MOON_GAIN : 1)
     sky.apply(st)
-    hemi.color.copy(st.hemiSky).lerp(nightTint, NIGHT_SKY_MIX * st.night)
+    hemi.color.copy(st.hemiSky).lerp(dayWarm, DAY_SKY_WARM_MIX * (1 - st.night)).lerp(nightTint, NIGHT_SKY_MIX * st.night)
     hemi.groundColor.copy(st.hemiGround).lerp(ceilingTint, CEILING_BOUNCE * (1 - st.night))
     hemi.groundColor.multiplyScalar(1 + (CEILING_FILL - 1) * (1 - st.night))
-    hemi.intensity = st.hemiI * HEMI_GAIN * (1 + NIGHT_HEMI_LIFT * st.night)
-    const trim = STYLE_DAY_EXPOSURE[state.style] ?? 1
-    renderer.toneMappingExposure = st.exposure * EXPOSURE_GAIN * (1 - (1 - trim) * (1 - st.night))
+    const trim = STYLE_DAY[state.style] ?? { exposure: 1, hemi: 1 }
+    const day = 1 - st.night
+    hemi.intensity = st.hemiI * HEMI_GAIN * (1 + NIGHT_HEMI_LIFT * st.night) * (1 - (1 - trim.hemi) * day)
+    renderer.toneMappingExposure = st.exposure * EXPOSURE_GAIN * (1 - (1 - trim.exposure) * day)
     lamps.setOn(lampOn)
     for (const m of registry.nightMaterials) m.emissiveIntensity = m.emissiveMap ? st.night : lampOn
     applied = hour
@@ -129,6 +136,7 @@ export function init(ctx) {
   ctx.events.on('style:changed', () => {
     refreshMaterials()
     apply(state.hour)
+    env.regenerate(sample(state.hour), state.hour) // l'intensità dell'ambiente dipende dallo stile
   })
   ctx.events.on('quality:changed', () => {
     applyQuality()

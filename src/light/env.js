@@ -66,7 +66,7 @@ export function createEnv(ctx, gains) {
     target = next
     texture = next.texture
     scene.environment = texture
-    scene.environmentIntensity = cfg.sceneIntensity * gains.envGain
+    scene.environmentIntensity = cfg.sceneIntensity * gains.envGain * (gains.styleTrim?.() ?? 1)
     applyReflections()
     old?.dispose()
     lastHour = hour
