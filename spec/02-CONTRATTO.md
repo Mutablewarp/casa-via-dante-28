@@ -119,6 +119,7 @@ ctx = {
     updaters: []               // funzioni (dt, t) chiamate a ogni fotogramma, nell'ordine di inserimento
   },
   api: {},                     // funzioni pubbliche, vedi sezione 8
+  render,                      // G: disegna un fotogramma completo (scena in HDR, occlusione, bloom, mappatura tonale); main.js la chiama al posto di renderer.render
   debug: { errors: [] },       // creato in context.js prima delle init; ogni modulo vi aggiunge le proprie voci (sezione 9)
   nav: {}, mat: {}, tex: {}, furn: {}   // riempiti dai moduli proprietari
 }
@@ -229,13 +230,16 @@ Serve ai test. Ogni modulo aggiunge le proprie voci a `ctx.debug`.
 | Voce | Proprietario | Ritorno |
 |---|---|---|
 | `errors` | S0 | elenco degli errori catturati |
-| `stats()` | S0 | `{ fps, calls, triangles, geometries, textures, pointLights }` da `renderer.info` e dalla scena |
+| `stats()` | S0 | `{ fps, calls, triangles, geometries, textures, pointLights }` da `renderer.info` e dalla scena. `calls` e `triangles` contano il fotogramma mostrato (ombre, scena, passate finali), non la manutenzione della luce (sonde, mappa dei riflessi, ombra lontana) |
 | `settle(frames = 30)` | S0 | Promise risolta dopo `frames` fotogrammi |
 | `ctx` | S0 | il contesto, solo con `?debug` |
 | `step(input, seconds)` | H | Simula i comandi `{ forward, right }` da -1 a 1 per `seconds` secondi di tempo simulato e restituisce la posa finale |
 | `furniture()` | F | `[{ id, type, room, placeholder, bbox: [x0, y0, z0, x1, y1, z1], parts, props: [{ name, count, placeholder }] }]`: `bbox` è del solo mobile, senza oggetti d'appoggio; `parts` è il numero di mesh prima della fusione; `props[].placeholder` è vero se l'oggetto d'appoggio non ha un costruttore |
 | `quality()`, `qualityFeed(ms)` | Q | stato della qualità; `qualityFeed` inserisce un tempo di fotogramma finto e fa avanzare di `ms` il tempo del misuratore |
 | `lights()` | G | `{ sun: { intensity, elevation, castShadow }, hemi, lampOn, realLights, shadeEmissive, exposure, night }` |
+| `post()` | G | `{ metered, high, level, samples, ao, bloom, width, height }`: luminanza media e delle zone chiare del fotogramma, passate attive |
+| `probes()` | G | `{ rooms, cubeSize, captures, pending, envRoom, lum }`: sonde di luce indiretta, una per ambiente |
+| `farShadow()` | G | `{ on, size, draws }`: mappa d'ombra del sole sul quartiere |
 | `tourLog()` | I | sequenza delle soste raggiunte con il tempo |
 | `minimapPx(x, z)` | K | `{ x, y }`: coordinate nella finestra (`clientX`, `clientY`) del punto pianta `(x, z)` sulla minimappa |
 | `audio()` | J | `{ state, gain, voices, scheduledNotes }`; prima della prima accensione `state` vale `'none'` e gli altri campi 0 |
@@ -248,13 +252,20 @@ Misurati con `debug.stats()` nel punto peggiore.
 |---|---|
 | Chiamate di disegno, prima persona | 650 |
 | Chiamate di disegno, vista dall'alto | 900 |
-| Triangoli in scena | 800 000 |
-| Texture | 80, nessuna oltre 1024 × 1024, tranne il fondale dei monti (4096 × 512, una sola) |
+| Triangoli in scena | 900 000 |
+| Texture | 140 (comprese le circa 30 dei bersagli di resa), nessuna di colore oltre 1024 × 1024, tranne il fondale dei monti (4096 × 512, una sola) |
 | Luci puntiformi accese | 12 alta, 6 media, 3 bassa; nessuna proietta ombre |
-| Luci con ombra | 1 (sole o luna) |
+| Luci con ombra | 1 (sole o luna), più la mappa d'ombra lontana dello stesso sole |
 | `index.html` | 2,0 MB |
 | Tempo fino a `ready` in Chrome headless su questo Mac | 6 s |
 | Rapporto pixel | `min(devicePixelRatio, 1.5)` alta, 1.25 media, 1.0 bassa |
+
+Come si disegna un fotogramma (G, `src/light/`):
+
+- La scena va in un bersaglio HDR con MSAA; poi occlusione ambientale (GTAO), bloom con tetto, mappatura tonale AgX con un po' di contrasto e saturazione, sRGB e retinatura (`post.js`). In qualità bassa restano solo scena e mappatura tonale.
+- L'esposizione è automatica: un esposimetro legge il fotogramma (media logaritmica e 90° percentile) e l'esposizione insegue la media, cedendo in parte alle zone chiare; di notte il tetto scende (`index.js`).
+- La luce indiretta è per stanza: una sonda ad armoniche sferiche per ambiente, scelta nello shader da una mappa in pianta a 5 cm; i riflessi vengono dalla sonda della stanza corrente (`probes.js`, `probe-shader.js`). Per questo **nessun modulo usa `onBeforeCompile`** sui materiali standard: lo fa già G, una volta, sul prototipo.
+- Il sole ha due mappe d'ombra: quella di three sulla casa e una larga sul quartiere (`far-shadow.js`), che vale fuori dalla prima. Sulla seconda proiettano le mesh con `castShadow` dei gruppi `city`, `exterior`, `architecture`, `ceilings`; la riceve ogni `MeshStandardMaterial`.
 
 Come restare nei limiti:
 

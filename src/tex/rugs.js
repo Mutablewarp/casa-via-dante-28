@@ -1,5 +1,5 @@
 /** Tappeti: composizione persiana (Liberty) e varianti Moderno / Scandinavo. */
-import { rngFor, makeCanvas, shade, abrash, addNoise, diamond, rosette } from './draw.js'
+import { rngFor, makeCanvas, shade, abrash, addNoise, diamond, rosette, plausibleHex } from './draw.js'
 import { PERSIAN, RUG_ALIAS } from './rugs-config.js'
 import { medallion, cantonal } from './rugs-motifs.js'
 import { strip, fieldFill, halo } from './rugs-fill.js'
@@ -118,8 +118,10 @@ export function drawRug(style, pattern, aspect) {
   const { canvas: land, g } = makeCanvas(LW, LH)
   if (pattern === 'zerbino') paintDoormat(g, LW, LH, rnd)
   else if (style === 'liberty') {
-    const name = RUG_ALIAS[pattern] ?? pattern
-    paintPersian(g, LW, LH, PERSIAN[name] ?? PERSIAN.heriz, rnd)
+    const cfg = PERSIAN[RUG_ALIAS[pattern] ?? pattern] ?? PERSIAN.heriz
+    // lana tinta: nemmeno il blu notte e il nero scendono sotto un albedo di 0,03
+    const pal = Object.fromEntries(Object.entries(cfg.pal).map(([k, v]) => [k, Array.isArray(v) ? v.map(plausibleHex) : plausibleHex(v)]))
+    paintPersian(g, LW, LH, { ...cfg, pal }, rnd)
   } else paintAlt(g, LW, LH, style, pattern, rnd)
   let out = land
   if (portrait) {

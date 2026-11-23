@@ -144,7 +144,8 @@ export function createBucket() {
         const mesh = new THREE.Mesh(g, mat)
         mesh.name = name
         mesh.castShadow = e.cast
-        mesh.receiveShadow = e.cast
+        // tutto ciò che è opaco riceve ombra: senza, il sole illumina battiscopa e cornici attraverso i muri
+        mesh.receiveShadow = e.cast || !mat.transparent
         group.add(mesh)
       }
       map.clear()

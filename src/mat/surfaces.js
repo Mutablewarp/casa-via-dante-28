@@ -10,8 +10,19 @@
  */
 import { setMat, ensureRepeat } from './apply.js'
 import { hashStr } from './noise.js'
-import { wallCloud, wallCloudG, fineNoise } from './textures.js'
+import { wallCloud, wallCloudG, fineNoise, plasterNormal } from './textures.js'
 import { floorTexture, floorTextureG } from './floors.js'
+
+/** Forza della normalMap di intonaco: stucco tirato a mano, pittura liscia, soffitto. */
+const PLASTER = { terre_fiorentine: 3, pittura_liscia: 1.2, ceiling: 1.2 }
+/** Marmo lucidato (scacchiera e lastre venate): la rugosità resta in questo intervallo. */
+const POLISHED = [0.12, 0.22]
+
+/** L'intonaco è uno solo per tutte le pareti, i soffitti e la facciata. */
+export const plaster = (ctx, store) => store.get('plaster', () => plasterNormal(ctx.THREE))
+
+/** Rilievo agganciato a una mappa di colore (`null` dove manca, così il cambio di stile toglie quello vecchio). */
+export const reliefOf = (map) => ({ normalMap: map?.userData.normalMap ?? null, roughnessMap: map?.userData.roughnessMap ?? null })
 
 /**
  * Texture della parete di `id` per lo stile `st`: chiave di cache, `make` sincrono e, se la texture è
@@ -20,12 +31,11 @@ import { floorTexture, floorTextureG } from './floors.js'
 export function wallTexSpec(ctx, id, st = ctx.currentStyle()) {
   const fin = st.wallFinish ?? {}
   if (fin.type === 'terre_fiorentine') {
-    const v = hashStr(id) % 3
     const contrast = fin.contrast ?? 0.1
     return {
-      key: `cloud:${v}:${contrast}`,
-      make: () => wallCloud(ctx.THREE, v, contrast),
-      gen: () => wallCloudG(ctx.THREE, v, contrast),
+      key: `cloud:${contrast}`,
+      make: () => wallCloud(ctx.THREE, contrast),
+      gen: () => wallCloudG(ctx.THREE, contrast),
     }
   }
   return { key: 'fine', make: () => fineNoise(ctx.THREE), gen: null }
@@ -49,9 +59,11 @@ export function wallProps(ctx, store, id, st = ctx.currentStyle()) {
   const fin = st.wallFinish ?? {}
   const color = st.walls?.[id] ?? st.wallDefault
   const spec = wallTexSpec(ctx, id, st)
-  const map = store.get(spec.key, spec.make)
-  if (fin.type === 'terre_fiorentine') return { color, roughness: fin.roughness ?? 0.92, map }
-  return { color, roughness: fin.roughness ?? 0.9, map }
+  const liberty = fin.type === 'terre_fiorentine'
+  return {
+    color, roughness: fin.roughness ?? (liberty ? 0.92 : 0.9), map: store.get(spec.key, spec.make),
+    normalMap: plaster(ctx, store), relief: PLASTER[fin.type] ?? 1,
+  }
 }
 
 /** Proprietà del pavimento dello spazio `id`; senza definizione valida restituisce un grigio e avvisa una volta. */
@@ -60,9 +72,13 @@ export function floorProps(ctx, store, id, warn, st = ctx.currentStyle()) {
   if (!spec) {
     const name = st.floors?.[id] ?? st.floorDefault
     warn(`${st.name}:${id}:${name}`, `mat: pavimento "${name}" (spazio ${id}) non definito, uso un grigio`)
-    return { color: '#9a9a9a', roughness: 0.8, map: null }
+    return { color: '#9a9a9a', roughness: 0.8, map: null, ...reliefOf(null) }
   }
-  return { color: '#ffffff', roughness: spec.def.roughness ?? 0.6, map: store.get(spec.key, spec.make) }
+  const { def } = spec
+  const map = store.get(spec.key, spec.make)
+  let roughness = def.roughness ?? 0.6
+  if (def.veins && (def.kind === 'checker' || def.kind === 'slab')) roughness = Math.min(POLISHED[1], Math.max(POLISHED[0], roughness))
+  return { color: '#ffffff', roughness, map, ...reliefOf(map) }
 }
 
 /**
@@ -92,6 +108,12 @@ export function createSurfaces(ctx, store, link) {
     return tex
   }
 
+  /** Il rivestimento porta con sé rilievo e finitura (`userData.pbr`, da A2): smalto lucido, fuga incassata e ruvida. */
+  const wainscotProps = (name) => {
+    const map = wainscotMap(name)
+    return { color: '#ffffff', roughness: 0.35, map, normalMap: null, roughnessMap: null, ...map?.userData.pbr }
+  }
+
   const applyAll = (id, r) => {
     const out = outdoor.has(id)
     if (!out) setMat(r.wall, wallProps(ctx, store, id))
@@ -99,14 +121,14 @@ export function createSurfaces(ctx, store, link) {
     const name = out ? null : wainscotName(id)
     if (name) {
       r.wainscotMat ??= std()
-      setMat(r.wainscotMat, { color: '#ffffff', roughness: 0.35, map: wainscotMap(name) })
+      setMat(r.wainscotMat, wainscotProps(name))
     }
     r.wainscot = name ? r.wainscotMat : null
   }
 
   const applyShared = () => {
     const st = ctx.currentStyle()
-    setMat(shared.ceiling, { color: st.ceiling.color, roughness: 0.95 })
+    setMat(shared.ceiling, { color: st.ceiling.color, roughness: 0.95, normalMap: plaster(ctx, store), relief: PLASTER.ceiling })
     setMat(shared.skirting, { color: st.trim.skirting, roughness: 0.5 })
   }
 
@@ -139,7 +161,7 @@ export function createSurfaces(ctx, store, link) {
     refreshTiles() {
       for (const [id, r] of rooms) {
         const name = outdoor.has(id) ? null : wainscotName(id)
-        if (name) setMat(r.wainscotMat, { map: wainscotMap(name) })
+        if (name) setMat(r.wainscotMat, wainscotProps(name))
       }
     },
     materials() {

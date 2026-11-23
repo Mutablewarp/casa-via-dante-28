@@ -32,16 +32,29 @@ const mod = (a, n) => ((a % n) + n) % n
 /**
  * Rumore di valore 2D. Con `period` > 0 è periodico sul reticolo (ripetibile senza giunture).
  * @param {number} x @param {number} y coordinate in unità di reticolo
- * @param {number} period lato del periodo (intero) o 0
+ * @param {number} period lato del periodo lungo x (intero) o 0
  * @param {number} seed
+ * @param {number} periodY periodo lungo y, se diverso (rumore stirato)
  */
-export function vnoise(x, y, period = 0, seed = 0) {
+export function vnoise(x, y, period = 0, seed = 0, periodY = period) {
   const xi = Math.floor(x), yi = Math.floor(y)
   const xf = smooth(x - xi), yf = smooth(y - yi)
-  const w = (v) => (period > 0 ? mod(v, period) : v)
-  const a = hash2(w(xi), w(yi), seed), b = hash2(w(xi + 1), w(yi), seed)
-  const c = hash2(w(xi), w(yi + 1), seed), d = hash2(w(xi + 1), w(yi + 1), seed)
+  const x0 = period > 0 ? mod(xi, period) : xi, x1 = period > 0 ? mod(xi + 1, period) : xi + 1
+  const y0 = periodY > 0 ? mod(yi, periodY) : yi, y1 = periodY > 0 ? mod(yi + 1, periodY) : yi + 1
+  const a = hash2(x0, y0, seed), b = hash2(x1, y0, seed)
+  const c = hash2(x0, y1, seed), d = hash2(x1, y1, seed)
   return a + (b - a) * xf + (c - a) * yf + (a - b - c + d) * xf * yf
+}
+
+/**
+ * Fibra del legno, in circa [-1, 1]: striature fini e allungate più qualche fiamma morbida, senza bande regolari.
+ * @param {number} c metri di traverso alla fibra @param {number} l metri lungo la fibra @param {number} key seme (listello)
+ */
+export function fiber(c, l, key) {
+  const f1 = vnoise(c * 420, l * 6, 0, key) // fibre fini: circa 2,5 mm x 17 cm
+  const f2 = vnoise(c * 95 + 7, l * 2.4, 0, key + 5) // striature: circa 1 cm x 40 cm
+  const f3 = vnoise(c * 24 + Math.sin(l * 3.1 + key) * 0.9, l * 0.9, 0, key + 9) // fiamma: bande larghe che deviano
+  return (f1 - 0.5) * 0.8 + (f2 - 0.5) * 0.8 + (f3 - 0.5) * 0.7
 }
 
 /** Converte "#RRGGBB" in [r,g,b] 0-255. */
@@ -133,6 +146,11 @@ export function meanSrgb(img) {
 /** Valore lineare di un grigio sRGB 0-1. */
 export function srgbToLinear(v) {
   return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+}
+
+/** Grigio sRGB 0-1 di un valore lineare. */
+export function linearToSrgb(v) {
+  return v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055
 }
 
 /**

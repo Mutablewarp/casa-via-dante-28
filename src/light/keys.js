@@ -80,6 +80,7 @@ export function createSampler(THREE, lighting) {
     for (const c of COLOR_KEYS) out[c].copy(a[c]).lerp(b[c], t)
     for (const n of NUM_KEYS) out[n] = lerp(a[n], b[n], t)
     directional(hour)
+    out.hour = hour
     return out
   }
 }

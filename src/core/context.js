@@ -40,7 +40,7 @@ export function createContext({ canvas, data, debugOn }) {
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.outputColorSpace = THREE.SRGBColorSpace
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMapping = THREE.AgXToneMapping
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFShadowMap
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))

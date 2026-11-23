@@ -28,7 +28,7 @@
  ],
  "horizonFade": "intensita effettiva del sole = sunI interpolata * smoothstep(0, 4, el): sfuma a zero tra 4 gradi e l'orizzonte, senza salti",
  "moonSwap": "ora di scambio 20.2: tra 19.4 e 20.2 la luce direzionale resta a intensita 0 con la direzione del sole; a 20.2, a intensita 0, prende direzione e colore della luna (fotogramma delle 21.0); da 20.2 a 21.0 l'intensita sale fino a sunI delle 21.0. Mai un salto visibile",
- "sun": {"castShadow": true, "shadowMapSize": {"high": 2048, "medium": 1024, "low": 0}, "shadowType": "PCFShadowMap", "shadowUpdate": "renderer.shadowMap.autoUpdate = false; needsUpdate = true solo quando la direzione del sole cambia di piu di 0.2 gradi, dopo furnished, dopo quality:changed e dopo view:changed", "frustum": "ortografico che copre x da -1 a 30, z da 0 a 16, y da -1 a 4; bias da tarare per evitare acne e peter-panning", "radius": 3},
+ "sun": {"castShadow": true, "shadowMapSize": {"high": 4096, "medium": 1024, "low": 0}, "shadowType": "PCFShadowMap", "shadowUpdate": "renderer.shadowMap.autoUpdate = false; needsUpdate = true solo quando la direzione del sole cambia di piu di 0.2 gradi, dopo furnished, dopo quality:changed e dopo view:changed", "frustum": "ortografico che copre x da -1 a 30, z da 0 a 16, y da -1 a 4; bias da tarare per evitare acne e peter-panning", "radius": 2},
  "lamps": {
   "onCurve": "lampOn = smoothstep(0.10, 0.60, night)",
   "color": "#FFD2A0",

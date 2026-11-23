@@ -55,6 +55,9 @@ function startLoop(ctx) {
   timer.connect(document)
   const broken = new Set()
   let time = 0
+  // i contatori di renderer.info coprono il fotogramma mostrato (ombre, scena, passate finali), non la manutenzione
+  // della luce fatta dagli updater (sonde, mappa dei riflessi, ombra lontana): si azzerano subito prima del disegno
+  ctx.renderer.info.autoReset = false
   ctx.renderer.setAnimationLoop(() => {
     timer.update()
     const dt = Math.min(timer.getDelta(), MAX_DT) * ctx.state.timeScale
@@ -69,7 +72,9 @@ function startLoop(ctx) {
       }
     }
     try {
-      ctx.renderer.render(ctx.scene, ctx.camera)
+      ctx.renderer.info.reset()
+      if (ctx.render) ctx.render() // pipeline con occlusione ambientale e mappatura tonale (light/post.js)
+      else ctx.renderer.render(ctx.scene, ctx.camera)
     } catch (e) {
       ctx.renderer.setAnimationLoop(null)
       report(ctx, 'render', e)

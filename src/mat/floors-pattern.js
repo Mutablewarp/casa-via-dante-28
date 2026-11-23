@@ -1,12 +1,15 @@
 /** Pavimenti a motivo: spina di pesce (parquet, cotto) e cementine. Ogni cella è ripetibile senza giunture. */
-import { rgb, mix, fillPixelsG, makeCanvas, vnoise, hash2 } from './noise.js'
+import { rgb, mix, fillPixelsG, makeCanvas, vnoise, hash2, fiber } from './noise.js'
 import { canvasTexture } from './textures.js'
+import { reliefBuffers, attachRelief, joint } from './relief.js'
 
 const mod = (a, n) => ((a % n) + n) % n
 
 /**
  * Spina di pesce: listelli a 90° nel sistema del motivo, poi il tutto ruotato di 45° così
- * il «dente» corre lungo gli assi della stanza. Cella quadrata di lato 2·l·√2/… (vedi `cell`).
+ * il «dente» corre lungo gli assi della stanza. Cella quadrata di lato 2·n·w·√2.
+ * Parquet (`grain`): fuga incisa sottile, smusso, ogni listello con tono, pendenza e lucido suoi, fibra fine.
+ * Cotto: fuga di malta larga e incassata, superficie porosa e mossa.
  * @param {object} THREE
  * @param {{stave:[number, number], a:string, b:string, grain?:boolean, border?:string, roughness?:number}} def
  */
@@ -18,8 +21,11 @@ export function* herringbone(THREE, def) {
   const ppm = size / cell
   const cv = makeCanvas(size, size)
   const A = rgb(def.a), B = rgb(def.b)
-  const groutC = def.border ? rgb(def.border) : [28, 20, 14]
-  const gw = 0.0012
+  const wood = !!def.grain
+  const relKey = `herringbone:${n}:${wood}`
+  const rel = reliefBuffers(relKey, size, size, wood)
+  const groutC = wood ? (def.border ? rgb(def.border) : [62, 47, 34]) : mix(mix(A, B, 0.5), [176, 168, 154], 0.72)
+  const gw = wood ? 0.0012 : 0.0036 // mezza fuga nel colore
   const lenM = n * w
   const P = 2 * n
   const S = Math.SQRT1_2
@@ -33,26 +39,39 @@ export function* herringbone(THREE, def) {
     if (d < n) { k = mod(j, P); along = (ui - j - shift) / n; across = vi - j }
     else { isV = 1; k = mod(i - n, P); along = (vi - (i - P + 1 - shift)) / n; across = ui - i }
     const key = isV * 64 + k
-    const tone = 0.93 + hash2(key, 3, 11) * 0.14
-    const c = mix(A, B, hash2(key, 5, 2) * (def.grain ? 1 : 0.8)) // toni a caso listello per listello
-    let kf = tone
-    const aM = along * lenM
-    if (def.grain) {
-      const wob = vnoise(aM * 3, key * 3.1, 0, key)
-      kf *= 1 + 0.075 * Math.sin((across * 5 + wob * 2.2 + key * 0.37) * 2 * Math.PI)
-        + 0.05 * (vnoise(across * 36, aM * 7, 0, key + 3) - 0.5)
+    const c = mix(A, B, hash2(key, 5, 2) * (wood ? 1 : 0.8)) // toni a caso listello per listello
+    const aM = along * lenM, cM = across * w
+    let kf = 0.94 + hash2(key, 3, 11) * 0.12
+    let fib
+    if (wood) {
+      fib = fiber(cM, aM, key)
+      kf *= 1 + 0.04 * fib
     } else {
-      kf *= 0.95 + hash2(px, py, 8) * 0.07 + 0.08 * (vnoise(px / 9, py / 9, 0, key) - 0.5)
+      fib = vnoise(cM * 170, aM * 170, 0, key) - 0.5 // pori e grani dell'argilla
+      kf *= 1 + 0.08 * (vnoise(cM * 24, aM * 24, 0, key + 40) - 0.5) + 0.07 * fib + 0.05 * (hash2(px, py, 8) - 0.5)
     }
-    const edge = Math.min(across * w, (1 - across) * w, along * lenM, (1 - along) * lenM)
+    const edge = Math.min(across * w, (1 - across) * w, aM, lenM - aM)
     let r = c[0] * kf, g = c[1] * kf, b = c[2] * kf
     if (edge < gw) {
-      const t = (1 - edge / gw) * 0.85
+      const t = wood ? (1 - edge / gw) * 0.85 : Math.min(1, (1 - edge / gw) * 3) * 0.92
       r += (groutC[0] - r) * t; g += (groutC[1] - g) * t; b += (groutC[2] - b) * t
     }
     out[0] = r; out[1] = g; out[2] = b
+    if (!rel) return
+    const q = py * size + px
+    // ogni elemento è posato con una pendenza e una quota sue: è ciò che spezza i riflessi listello per listello
+    const tilt = wood ? 0.008 : 0.016
+    let h = (hash2(key, 7, 21) - 0.5) * tilt * (across - 0.5) * w + (hash2(key, 8, 22) - 0.5) * tilt * 0.25 * (along - 0.5) * lenM
+    if (wood) {
+      h += joint(edge, 0.0004, 0.00035, 0.0014) + fib * 0.00003
+      rel.rm[q] = edge < gw ? 1 : Math.min(1, 0.72 + 0.26 * hash2(key, 6, 24) + 0.05 * fib)
+    } else {
+      h += joint(edge, 0.003, 0.0018, 0.004) + (fib < -0.18 ? (fib + 0.18) * 0.0014 : 0) + (hash2(px, py, 6) - 0.5) * 0.00008
+    }
+    rel.hm[q] = h
   })
-  return canvasTexture(THREE, cv.canvas, { meters: cell, aniso: 4 })
+  const tex = canvasTexture(THREE, cv.canvas, { meters: cell, aniso: 4, albedo: true })
+  return attachRelief(THREE, tex, relKey, rel, [cell, cell], { aniso: 4, halfRough: true })
 }
 
 /** Stella a otto punte, cornice e rombi agli angoli. */
@@ -112,12 +131,13 @@ const MOTIFS = { stella, fiore, scacco }
 
 /**
  * Cementine: cella 2 x 2 piastrelle, ognuna ruotata di 90° rispetto alla vicina, con fuga chiara.
+ * Opache; nel rilievo (uno per tutte le cementine) la fuga è appena rilevata e ogni piastrella ha la sua posa.
  * @param {object} THREE
  * @param {{tile:number, motif:string, colors:string[]}} def
  */
 export function cementine(THREE, def) {
-  const ts = 256
-  const cv = makeCanvas(ts * 2, ts * 2)
+  const ts = 256, N = ts * 2
+  const cv = makeCanvas(N, N)
   const g = cv.g
   const draw = MOTIFS[def.motif] ?? scacco
   for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) {
@@ -137,5 +157,18 @@ export function cementine(THREE, def) {
     g.beginPath(); g.moveTo(k * ts, 0); g.lineTo(k * ts, ts * 2); g.stroke()
     g.beginPath(); g.moveTo(0, k * ts); g.lineTo(ts * 2, k * ts); g.stroke()
   }
-  return canvasTexture(THREE, cv.canvas, { meters: def.tile * 2, aniso: 4 })
+  const rel = reliefBuffers('cementine', N, N)
+  if (rel) {
+    for (let py = 0, q = 0; py < N; py++) for (let px = 0; px < N; px++, q++) {
+      const fx = (px + 0.5) / ts, fy = (py + 0.5) / ts
+      const i = Math.floor(fx), j = Math.floor(fy)
+      const cx = fx - i, cy = fy - j
+      const edge = Math.min(cx, 1 - cx, cy, 1 - cy) * def.tile
+      rel.hm[q] = joint(edge, 0.0008, -0.00018, 0.0012) // fuga in leggero rilievo
+        + ((hash2(i, j, 51) - 0.5) * (cx - 0.5) + (hash2(i, j, 52) - 0.5) * (cy - 0.5)) * 0.004 * def.tile
+        + 0.00006 * vnoise(px / 8, py / 8, N / 8, 53) + 0.00003 * hash2(px, py, 54)
+    }
+  }
+  const tex = canvasTexture(THREE, cv.canvas, { meters: def.tile * 2, aniso: 4, albedo: true })
+  return attachRelief(THREE, tex, 'cementine', rel, [def.tile * 2, def.tile * 2], { aniso: 4 })
 }

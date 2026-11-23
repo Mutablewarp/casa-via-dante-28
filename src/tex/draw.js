@@ -58,6 +58,33 @@ export function shade(hex, t) {
   return t >= 0 ? mix(hex, '#ffffff', t) : mix(hex, '#000000', -t)
 }
 
+const toLin = (v) => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4))
+const toSrgb = (v) => (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)
+
+/**
+ * Albedo plausibile di un colore: luminanza lineare non sotto 0,03 (la tinta resta) e nessun canale oltre 0,85.
+ * @param {string} hex colore esadecimale
+ * @returns {string} colore esadecimale
+ */
+export function plausibleHex(hex) {
+  let c = rgb(hex).map((v) => toLin(v / 255))
+  const l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+  if (l < 0.03) c = l > 1e-4 ? c.map((v) => (v * 0.03) / l) : [0.03, 0.03, 0.03]
+  return toHex(c.map((v) => toSrgb(Math.min(v, 0.85)) * 255))
+}
+
+/** Tetto ai bianchi di un canvas opaco: minimo canale per canale con 237 (0,85 lineare), senza leggere i pixel. */
+export function capWhites(canvas) {
+  const g = canvas.getContext('2d')
+  g.save()
+  g.setTransform(1, 0, 0, 1, 0, 0)
+  g.globalAlpha = 1
+  g.globalCompositeOperation = 'darken'
+  g.fillStyle = '#ededed'
+  g.fillRect(0, 0, canvas.width, canvas.height)
+  g.restore()
+}
+
 /**
  * Disegna un poligono pieno (e contorno se `stroke`).
  * @param {CanvasRenderingContext2D} g contesto

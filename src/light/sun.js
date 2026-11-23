@@ -13,6 +13,7 @@ const FADE_EL1 = 4
 // lighting.sun.shadowUpdate: ridisegno solo se la direzione cambia di più di 0,2°
 const SHADOW_DIR_DEG = 0.2
 const MIN_INTENSITY = 0.002
+const ROOF_THICKNESS = 0.5 // m: lastra d'ombra sopra i soffitti
 const DEG = Math.PI / 180
 
 /**
@@ -38,7 +39,18 @@ export function createSun(ctx, { gain }) {
   const tmp = new THREE.Vector3()
   const lo = new THREE.Vector3()
   const hi = new THREE.Vector3()
-  const info = { elevation: 0, size: lighting.sun.shadowMapSize.high, wantShadow: true }
+  const info = { elevation: 0, size: lighting.sun.shadowMapSize.high, wantShadow: true, version: 0 }
+
+  // Lastra invisibile sopra i soffitti. Un soffitto è un piano: in cima a un muro esposto al sole il punto dista dal
+  // piano meno della tolleranza della mappa d'ombra e prende una riga di luce. Con la lastra l'ombra parte mezzo metro più su.
+  const roofMat = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false, shadowSide: THREE.DoubleSide })
+  for (const [x0, z0, x1, z1] of ctx.plan.footprint) {
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, ROOF_THICKNESS, z1 - z0), roofMat)
+    slab.position.set((x0 + x1) / 2, ctx.plan.meta.ceilingHeight + ROOF_THICKNESS / 2, (z0 + z1) / 2)
+    slab.castShadow = true
+    slab.name = 'roof-caster'
+    ctx.groups.ceilings.add(slab)
+  }
 
   /** Camera d'ombra ortografica che copre il volume della casa lungo la direzione corrente. */
   function fitShadowCamera() {
@@ -67,6 +79,7 @@ export function createSun(ctx, { gain }) {
     fitShadowCamera()
     shadowDir.copy(dir)
     renderer.shadowMap.needsUpdate = true
+    info.version++ // anche l'ombra lontana va rifatta (far-shadow.js)
   }
 
   /** Dimensione della mappa d'ombra secondo la qualità (0 = ombre spente). */
@@ -109,5 +122,5 @@ export function createSun(ctx, { gain }) {
     if (shadowDir.lengthSq() === 0 || dir.angleTo(shadowDir) > SHADOW_DIR_DEG * DEG) refreshShadow()
   }
 
-  return { light, apply, refreshShadow, setQuality, info }
+  return { light, dir, apply, refreshShadow, setQuality, info }
 }

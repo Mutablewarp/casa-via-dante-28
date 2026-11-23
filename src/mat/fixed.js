@@ -1,7 +1,8 @@
 /** Materiali che non dipendono dalla stanza: parti condominiali (fisse) e finiture che seguono lo stile. */
 import { setMat, ensureRepeat } from './apply.js'
-import { fineNoise, klinker, contextFacade } from './textures.js'
-import { wallProps } from './surfaces.js'
+import { fineNoise, contextFacade } from './textures.js'
+import { klinker } from './klinker.js'
+import { wallProps, plaster, reliefOf } from './surfaces.js'
 import { tokenProps } from './tokens.js'
 
 /**
@@ -14,32 +15,44 @@ export function createFixed(ctx, store, link) {
   const ex = ctx.styles.exterior
   const fx = ctx.styles.fixed
   const fine = () => store.get('fine', () => fineNoise(THREE))
-  const tok = (name) => ctx.currentStyle().tokens[name]
+  const tok = (name) => tokenProps(ctx, store, name)
+  const stucco = (relief) => ({ normalMap: plaster(ctx, store), relief }) // intonaco esterno: grana più viva di quello interno
 
   /** Nome -> proprietà. `dyn` = segue lo stile corrente. */
   const SPEC = {
-    facade: { f: () => ({ color: ex.facade, roughness: 0.95, map: fine() }) },
+    facade: { f: () => ({ color: ex.facade, roughness: 0.95, map: fine(), ...stucco(3) }) },
     klinker: {
-      f: () => ({ color: '#ffffff', roughness: ex.klinker.roughness, map: store.get('klinker', () => klinker(THREE, ex.klinker.color, ex.klinker)) }),
+      f: () => {
+        const map = store.get('klinker', () => klinker(THREE, ex.klinker.color, ex.klinker))
+        return { color: '#ffffff', roughness: ex.klinker.roughness, map, ...reliefOf(map) }
+      },
     },
-    pillar: { f: () => ({ color: ex.pillars, roughness: 0.85 }) },
-    soffit: { f: () => ({ color: ex.soffit, roughness: 0.9 }) },
+    pillar: { f: () => ({ color: ex.pillars, roughness: 0.85, ...stucco(2) }) },
+    soffit: { f: () => ({ color: ex.soffit, roughness: 0.9, ...stucco(2) }) },
     railing: { f: () => ({ color: ex.railing.color, roughness: 0.5, metalness: 0.35 }) },
     handrail: { f: () => ({ color: ex.railing.handrail, roughness: 0.45 }) },
     verandaFrame: { f: () => ({ color: ex.verandaFrame, roughness: 0.45, metalness: 0.3 }) },
     wallcap: { dyn: true, f: () => ({ color: fx.wallcap.color, roughness: fx.wallcap.roughness }) },
     context: { dyn: true, f: () => ({ color: fx.context.color, roughness: fx.context.roughness }) },
-    // pareti dell'edificio confinante: finestre neutre (i tetti restano su `context`, senza mappa)
+    // tetto piano dell'edificio confinante: grigio dei lastrici della città (PAL.roofFlat), con grana
+    contextRoof: { f: () => ({ color: '#a39c8f', roughness: 0.95, map: fine(), ...stucco(3) }) },
+    // pareti dell'edificio confinante: finestre neutre (i tetti hanno `contextRoof`)
     contextWall: { dyn: true, f: () => ({ color: fx.context.color, roughness: fx.context.roughness, map: store.get('contextFacade', () => contextFacade(THREE, ctx.plan.meta.ceilingHeight)) }) },
     common: { dyn: true, f: () => wallProps(ctx, store, 'pianerottolo') },
     trim: { dyn: true, f: () => ({ color: ctx.currentStyle().trim.frames, roughness: 0.5 }) },
     door: { dyn: true, f: () => ({ color: ctx.currentStyle().trim.doors, roughness: 0.5 }) },
     // ante degli armadi a muro: pannello in tessuto; il telaio in legno è `builtinFrame`
-    builtin: { dyn: true, tiles: true, f: () => ({ color: '#ffffff', roughness: 0.85, map: ensureRepeat(THREE, ctx.tex.tile('tessuto_floreale')) }) },
-    builtinFrame: { dyn: true, f: () => tokenProps(ctx, store, tok('wood.secondary')) },
-    sill: { dyn: true, f: () => tokenProps(ctx, store, tok('stone.bath')) },
-    glass: { dyn: true, f: () => tokenProps(ctx, store, tok('glass.clear')) },
-    glassFrosted: { dyn: true, f: () => tokenProps(ctx, store, tok('glass.frosted')) },
+    builtin: {
+      dyn: true, tiles: true,
+      f: () => {
+        const map = ensureRepeat(THREE, ctx.tex.tile('tessuto_floreale'))
+        return { color: '#ffffff', roughness: 0.85, map, ...map.userData.pbr }
+      },
+    },
+    builtinFrame: { dyn: true, f: () => tok('wood.secondary') },
+    sill: { dyn: true, f: () => tok('stone.bath') },
+    glass: { dyn: true, f: () => tok('glass.clear') },
+    glassFrosted: { dyn: true, f: () => tok('glass.frosted') },
   }
 
   const cache = new Map()

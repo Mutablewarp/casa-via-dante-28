@@ -1,4 +1,4 @@
-/** Cupola del cielo: gradiente, alone e disco del sole, luna e stelle. Lo stesso materiale serve per la mappa dei riflessi. */
+/** Cupola del cielo: gradiente, nuvole, alone e disco del sole, luna e stelle. Lo stesso materiale serve per la mappa dei riflessi. */
 
 const DOME_RADIUS = 1200 // m: oltre il fondale dei monti (900 m), dentro camera.far (1500 m)
 const STAR_RADIUS = 1100
@@ -6,6 +6,10 @@ const STAR_COUNT = 700
 const SUN_DISK_RADIUS = 0.03 // rad
 const MOON_DISK_RADIUS = 0.018 // rad
 const SUN_DISK_GAIN = 9 // luminosità del disco prima del tone mapping
+// Nuvole: rumore frattale su uno strato piano visto in prospettiva
+const CLOUD_COVER = 0.56 // soglia del rumore: più bassa = cielo più coperto
+const CLOUD_SCALE = 1.5
+const CLOUD_DRIFT = 0.22 // spostamento per ora del giorno: le nuvole scorrono quando si muove il cursore dell'ora
 const DEG = Math.PI / 180
 
 const VERT = `
@@ -18,7 +22,23 @@ void main() {
 const FRAG = `
 uniform vec3 uTop, uHorizon, uSunDir, uSunColor, uMoonDir;
 uniform float uSunVis, uMoonVis, uDisk, uSunR, uMoonR, uDiskGain;
+uniform vec3 uCloud; // soglia di copertura, scala, spostamento
 varying vec3 vDir;
+float hash21(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x), mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float fbm(vec2 p) {
+  float a = 0.5, s = 0.0;
+  for (int i = 0; i < 5; i++) { s += a * vnoise(p); p = p * 2.03 + 17.7; a *= 0.5; }
+  return s;
+}
 void main() {
   vec3 d = normalize(vDir);
   float h = d.y;
@@ -27,6 +47,17 @@ void main() {
   float sd = max(dot(d, uSunDir), 0.0);
   float glow = pow(sd, 5.0) * 0.28 + pow(sd, 40.0) * 0.8;
   col += uSunColor * glow * uSunVis;
+  if (h > 0.0) {
+    // più fitte e schiacciate verso l'orizzonte, dove sfumano nella foschia; di notte quasi spariscono
+    vec2 cp = d.xz / (h + 0.18) * uCloud.y + vec2(uCloud.z, uCloud.z * 0.37);
+    float n = fbm(cp);
+    float cover = smoothstep(uCloud.x, uCloud.x + 0.22, n) * smoothstep(0.015, 0.16, h) * mix(0.3, 1.0, uSunVis);
+    // il lato verso il sole è più chiaro: differenza con il rumore un passo più in là
+    float lit = clamp(0.55 + (n - fbm(cp + normalize(uSunDir.xz + 1e-4) * 0.25)) * 2.2, 0.0, 1.0);
+    vec3 shade = mix(uTop, uHorizon, 0.65) * 0.8;
+    vec3 bright = uHorizon * 0.7 + uSunColor * (1.5 * uSunVis);
+    col = mix(col, mix(shade, bright, lit) + uSunColor * pow(sd, 12.0) * 0.6 * uSunVis, cover * 0.92);
+  }
   float above = smoothstep(-0.01, 0.02, h);
   float aSun = acos(clamp(dot(d, uSunDir), -1.0, 1.0));
   float sunDisk = (1.0 - smoothstep(uSunR * 0.75, uSunR, aSun)) * uSunVis * above * uDisk;
@@ -85,6 +116,7 @@ export function createSkyMaterial(THREE, disk) {
       uSunR: { value: SUN_DISK_RADIUS },
       uMoonR: { value: MOON_DISK_RADIUS },
       uDiskGain: { value: SUN_DISK_GAIN },
+      uCloud: { value: new THREE.Vector3(CLOUD_COVER, CLOUD_SCALE, 0) },
     },
   })
 }
@@ -106,6 +138,7 @@ export function setSkyUniforms(mat, st) {
   toward(u.uMoonDir.value, st.moon.az, st.moon.el)
   u.uSunVis.value = st.sunVis
   u.uMoonVis.value = st.moonVis
+  u.uCloud.value.z = (st.hour ?? 12) * CLOUD_DRIFT
 }
 
 /** Punti delle stelle sulla calotta alta, con posizioni fisse (generatore deterministico). */

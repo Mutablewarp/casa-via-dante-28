@@ -1,7 +1,8 @@
 /**
  * Lanciatore delle asserzioni di fase.
- * Uso: node tests/smoke.mjs [n] [--html file]
+ * Uso: node tests/smoke.mjs [n] [--html file] [--only T1.3,T3.9]
  *   senza n: fasi 1-3 presenti; n da 1 a 3: fasi da 1 a n; 4: solo la fase 4.
+ *   --only: esegue solo le asserzioni elencate (per ripetere quelle fallite per un rallentamento della macchina).
  */
 import { existsSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -12,6 +13,8 @@ const hi = argv.indexOf('--html')
 const htmlGiven = hi >= 0
 const html = htmlGiven ? argv[hi + 1] : 'index.html'
 const nArg = argv.find((a, i) => /^\d+$/.test(a) && !(hi >= 0 && i === hi + 1))
+const oi = argv.indexOf('--only')
+const only = oi >= 0 ? new Set(argv[oi + 1].split(',')) : null
 const n = nArg ? Number(nArg) : 3
 const phases = n === 4 ? [4] : Array.from({ length: n }, (_, i) => i + 1)
 
@@ -23,6 +26,7 @@ try {
     if (!existsSync(file)) { console.log(`fase ${ph}: file assente, saltata`); continue }
     const { assertions } = await import(pathToFileURL(file).href)
     for (const a of assertions) {
+      if (only && !only.has(a.id)) continue
       const opened = []
       const ctx = {
         html, htmlGiven, root: ROOT, browser,

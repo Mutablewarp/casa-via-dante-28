@@ -22,7 +22,9 @@ export function init(ctx) {
   /** Libera dalla GPU le texture che nessun materiale usa più (restano in cache per un eventuale ritorno). */
   const sweep = () => {
     const used = new Set()
-    for (const m of [...surfaces.materials(), ...fixed.materials(), ...tokens.materials()]) if (m.map) used.add(m.map)
+    for (const m of [...surfaces.materials(), ...fixed.materials(), ...tokens.materials()]) {
+      for (const k of ['map', 'normalMap', 'roughnessMap']) if (m[k]) used.add(m[k])
+    }
     store.sweep(used)
   }
 
@@ -41,5 +43,5 @@ export function init(ctx) {
 
   ctx.events.on('ready', () => startWarm(ctx, store))
 
-  ctx.debug.mat = () => ({ cachedTextures: store.size(), tokens: tokens.materials().length })
+  ctx.debug.mat = () => ({ cachedTextures: store.size(), tokens: tokens.materials().length, ms: store.ms })
 }

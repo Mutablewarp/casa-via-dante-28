@@ -1,110 +1,86 @@
-/** Retro (tetti a falde in coppi), condominio grigio e Palazzo Ziino. */
-import * as THREE from 'three'
-import { rng } from './exterior-util.js'
-import { PAL } from './exterior-mats.js'
-import { walls, hipRoof, flatRoof } from './city-blocks.js'
+/** Retro: case basse con tetti a falde in coppi e cortili, condominio grigio, e la distesa lontana fino al fondale. */
+import { rng, rgb, shade } from './exterior-util.js'
+import { style, palazzo, SHUT } from './city-kit.js'
+import { hipRoof, flatRoof } from './city-roofs.js'
+import { farBlock, hazed, roofTint, CROSS_A } from './city-blocks.js'
 
-const WALLS = ['#d8c3a0', '#e0cfb0', '#c9b79a', '#e6d9c0', '#d6bfa2']
-const ROOFS = ['#c65f3e', '#bc5435', '#cc6b47', '#c4623f', '#b85a3b']
-const ROWS = [[-6, -24], [-29, -48], [-52, -71], [-76, -90]] // fasce z dei file di edifici bassi
-const CROSS_X0 = 27 // il retro lascia libera la via Principe di Villafranca
-const CROSS_X1 = 47
+const WALLS = ['#d8c3a0', '#e0cfb0', '#c9b79a', '#e6d9c0', '#d6bfa2', '#dcc7ae']
+const ROOFS = ['#ffffff', '#f2ddd2', '#e4ccc0', '#f8e8de', '#d6beb2']
+const ROWS = [[-24, -6], [-48, -29], [-71, -52], [-90, -76]] // fasce z delle file di case basse
+const X_SPAN = [-74, 104]
+const NEAR_ROWS = 2 // le prime file hanno facciate e tetti dettagliati
+const BASE_H = 3.3
+const FLOOR_H = 3.25
+const RIDGE_MAX = -8 // plan.context.surroundings.rear: colmi tra y = -14 e y = -8
 const RISE = [1.8, 2.6]
-const ZIINO = { floors: 4, plinth: 3.4, eave: 0.55, window: 3.0 }
+
+const some = (j, k, nb, n, r) => {
+  const q = r()
+  return q < 0.22 ? 'balcony' : q < 0.48 ? 'petto' : 'window'
+}
+const REAR = style({
+  tint: WALLS[0], trim: '#ece5d6', bay: 3.3, ow: 1.05, head: 2.45, base: { kind: 'plain', h: BASE_H }, surround: false, marca: false, cornice: 0,
+  balDepth: 0.8, pClosed: 0.45, pOpen: 0.3, shutPal: [...SHUT.green, ...SHUT.gray], wins: ['win0', 'win1', 'win3'], balcony: some,
+})
+
+/** Tratti di una fila lungo x: larghezze irregolari, piccoli vuoti (cortili), niente sulla traversa A. */
+function segments(rand, r) {
+  const out = []
+  let x = X_SPAN[0] + r * 3 + rand() * 6
+  while (x < X_SPAN[1] - 8) {
+    let w = 13 + rand() * 13
+    if (x + w > CROSS_A[0] - 0.5 && x < CROSS_A[1] + 0.5) {
+      w = CROSS_A[0] - 0.5 - x
+      if (w < 9) { x = CROSS_A[1] + 0.5; continue }
+    }
+    out.push([x, Math.min(x + w, X_SPAN[1])])
+    x += w + (rand() < 0.3 ? 2.5 + rand() * 3 : 0.3)
+  }
+  return out
+}
 
 /**
- * Edifici bassi dietro la casa: tetti a falde in coppi rossi, colmi tra y = -14 e y = -8.
- * @param {object} B batch della città
- * @param {object} M materiali
+ * Case basse dietro l'attico: tetti a falde in coppi di altezze diverse, qualche terrazzo, cortili tra le file.
+ * @param {object} S0 accumuli e materiali
  * @param {number} G quota della strada (y)
  */
-export function buildRear(B, M, G) {
+export function buildRear(S0, G) {
   const rand = rng(41)
-  const lerp = (a, b) => a + rand() * (b - a)
+  const S = { ...S0, rand }
   ROWS.forEach(([z0, z1], r) => {
-    const segs = []
-    let x = -72 + r * 3 + rand() * 6
-    for (let k = 0; k < 2; k++) {
-      const w = lerp(34, 46)
-      segs.push([x, Math.min(x + w, CROSS_X0)])
-      x += w + lerp(4, 7)
+    for (const [x0, x1] of segments(rand, r)) {
+      const floors = rand() < 0.5 ? 2 : 3
+      const eave = G + BASE_H + floors * FLOOR_H + 0.15
+      const wall = WALLS[Math.floor(rand() * WALLS.length)]
+      const terrace = rand() < 0.18
+      const dz = rand() < 0.4 ? rand() * 3 : 0 // qualche casa è più corta: resta un cortile
+      const rect = [x0, z0 + dz, x1, z1]
+      const dist = Math.hypot((x0 + x1) / 2 - 15, (z0 + z1) / 2 - 8)
+      if (r >= NEAR_ROWS) {
+        farBlock(S, { x0, x1, z0: rect[1], z1, y0: G, top: eave, color: hazed(wall, dist * 0.5), roof: terrace ? 'flat' : 'hip', rise: RISE[0] + rand(), maxRidge: RIDGE_MAX, roofTint: roofTint(dist * 0.5), dist })
+        continue
+      }
+      const tint = rgb(wall)
+      const st = { ...REAR, floors, tint, base: { ...REAR.base, tint: shade(tint, 0.93) } }
+      const faces = { '+z': 1, '+x': Math.abs(x1 - (CROSS_A[0] - 0.5)) < 0.1 ? 1 : 0, '-x': Math.abs(x0 - (CROSS_A[1] + 0.5)) < 0.1 ? 1 : 0 }
+      palazzo(S, { r: rect, y0: G, y1: eave, st, faces })
+      if (terrace) flatRoof(S, rect, eave, { wall: shade(tint, 1.02), clutter: 1, parapet: 0.9 })
+      else hipRoof(S, rect, eave, Math.min(eave + RISE[0] + rand() * (RISE[1] - RISE[0]), RIDGE_MAX), { tint: ROOFS[Math.floor(rand() * ROOFS.length)], extras: 1, trim: shade(tint, 1.06) })
     }
-    const xr = CROSS_X1 + 1 + rand() * 6
-    segs.push([xr, xr + lerp(40, 52)])
-    segs.forEach(([x0, x1], k) => {
-      const floors = rand() < 0.5 ? 3 : 4
-      const eave = G + floors * 3.3
-      const o = { x0, x1, z0: z1, z1: z0, y0: G, top: eave, color: WALLS[Math.floor(rand() * WALLS.length)] }
-      walls(B, M, o)
-      if (r === 1 && k === 1) flatRoof(B, M, o, rand) // qualche terrazzo tra i tetti
-      else hipRoof(B, M, [x0, z1, x1, z0], eave, Math.min(eave + lerp(...RISE), -8), ROOFS[Math.floor(rand() * ROOFS.length)])
-    })
   })
   // condominio grigio di sette piani, verso -x
-  const o = { x0: -114, x1: -76, z0: -56, z1: -34, y0: G, top: G + 7 * 3.1, color: '#a7a9aa', floors: 7 }
-  walls(B, M, o)
-  flatRoof(B, M, o, rand)
-}
-
-/**
- * Palazzo Ziino: intonaco rosa, quattro piani su zoccolo scuro, finestre con cornici chiare,
- * balconi bianchi, cornicione e tetto a padiglione in coppi (visto dall'alto dalla terrazza).
- * @param {object} ctx contesto condiviso
- * @param {object} M materiali
- * @param {object} B batch della città
- * @param {number} G quota della strada (y)
- */
-export function buildZiino(ctx, M, B, G) {
-  const lm = ctx.plan.context.landmarks.find((l) => l.id === 'palazzo_ziino')
-  const [x0, z0, x1, z1] = lm.rect
-  const yBase = G + ZIINO.plinth
-  walls(B, M, { x0, z0, x1, z1, y0: yBase, top: lm.eavesY - ZIINO.eave, color: '#e2b9a0', bay: ZIINO.window, floors: ZIINO.floors })
-  B.box(M.plain, x0 - 0.15, G, z0 - 0.15, x1 + 0.15, yBase, z1 + 0.15, { skip: '+y-y', color: '#b58f7a' }) // zoccolo
-  B.box(M.plain, x0 - 0.15, yBase - 0.2, z0 - 0.15, x1 + 0.15, yBase, z1 + 0.15, { skip: '-y', color: '#f0e6d8' })
-  const top = lm.eavesY - ZIINO.eave
-  B.box(M.plain, x0 - 0.55, top, z0 - 0.55, x1 + 0.55, lm.eavesY, z1 + 0.55, { skip: '-y', color: '#f2ebe0' }) // cornicione
-  const fh = (top - yBase) / ZIINO.floors
-  const nbx = Math.max(1, Math.round((x1 - x0) / ZIINO.window))
-  const bw = (x1 - x0) / nbx
-  for (let k = 0; k < nbx; k++) {
-    const cx = x0 + bw * (k + 0.5)
-    for (let f = 0; f < ZIINO.floors; f++) {
-      const y = yBase + fh * f
-      const lint = k % 2 ? 0.28 : 0.5 // timpani alternati: architrave piano o più alto
-      B.box(M.plain, cx - 0.85, y + fh * 0.82, z0 - 0.12, cx + 0.85, y + fh * 0.82 + lint, z0, { color: '#f4f0e8' })
-      if ((f === 1 || f === 2) && k % 3 === 1) {
-        B.box(M.plain, cx - 1.1, y + 0.02, z0 - 1.0, cx + 1.1, y + 0.2, z0, { color: '#f6f2ea' })
-        B.box(M.plain, cx - 1.1, y + 0.2, z0 - 1.0, cx + 1.1, y + 1.0, z0 - 0.94, { skip: '+y-y', color: '#f6f2ea' })
-      }
-    }
-  }
-  hipRoof(B, M, [x0, z0, x1, z1], lm.eavesY, lm.ridgeY, '#c9694a', 0.55)
-  B.box(M.plain, (x0 + x1) / 2 - 3, lm.ridgeY, (z0 + z1) / 2 - 0.25, (x0 + x1) / 2 + 3, lm.ridgeY + 0.2, (z0 + z1) / 2 + 0.25, { color: '#9a5038' })
-  for (const f of [0.3, 0.7]) {
-    const cx = x0 + (x1 - x0) * f
-    B.box(M.plain, cx - 0.4, lm.eavesY, (z0 + z1) / 2 + 2, cx + 0.4, lm.ridgeY + 1.6, (z0 + z1) / 2 + 2.8, { color: '#c8a58f' })
-  }
-}
-
-const FAR_MIX = 450 // distanza (m) alla quale i colori si fondono con la foschia
-const _a = new THREE.Color()
-const _b = new THREE.Color()
-
-/** Colore sfumato verso la foschia in funzione della distanza dall'attico (prospettiva aerea). */
-function hazed(hex, dist) {
-  const t = Math.min(1, dist / FAR_MIX) ** 1.2 * 0.85
-  return '#' + _a.set(hex).lerp(_b.set(PAL.haze), t).getHexString()
+  farBlock(S, { x0: -114, x1: -76, z0: -56, z1: -34, y0: G, top: G + 7 * 3.1, color: '#a7a9aa', dist: 120 })
 }
 
 /**
  * Distesa di edifici lontani (retro e dietro i condomini): file a passo irregolare fino al fondale.
  * Colori sfumati verso la foschia; a -z tetti a falde, a +z blocchi con tetto piano.
- * @param {object} B batch della città
- * @param {object} M materiali
+ * @param {object} S0 accumuli e materiali
  * @param {number} G quota della strada (y)
  */
-export function buildCarpet(B, M, G) {
+export function buildCarpet(S0, G) {
   const rand = rng(77)
+  const S = { ...S0, rand }
   const lerp = (a, b) => a + rand() * (b - a)
   const fill = (zStart, dir, zEnd, low) => {
     let z = zStart
@@ -115,13 +91,11 @@ export function buildCarpet(B, M, G) {
       while (x < 440) {
         const w = lerp(26, 48)
         const dist = Math.hypot(x + w / 2, (za + zb) / 2)
-        const wallHex = hazed(WALLS[Math.floor(rand() * WALLS.length)], dist)
         const floors = low ? (rand() < 0.5 ? 3 : 4) : 5 + Math.floor(rand() * 5)
-        const top = G + floors * 3.3
-        const o = { x0: x, x1: x + w, z0: za, z1: zb, y0: G, top, color: wallHex }
-        walls(B, M, o)
-        if (low) hipRoof(B, M, [x, za, x + w, zb], top, Math.min(top + lerp(...RISE), -8), hazed(ROOFS[Math.floor(rand() * ROOFS.length)], dist))
-        else flatRoof(B, M, o, rand)
+        farBlock(S, {
+          x0: x, x1: x + w, z0: za, z1: zb, y0: G, top: G + floors * 3.3, color: hazed(WALLS[Math.floor(rand() * WALLS.length)], dist),
+          roof: low ? 'hip' : 'flat', rise: lerp(...RISE), maxRidge: RIDGE_MAX, roofTint: roofTint(dist), roofColor: hazed('#a39c8f', dist), dist,
+        })
         x += w + lerp(4, 9)
       }
       z += dir * (d + lerp(5, 9))

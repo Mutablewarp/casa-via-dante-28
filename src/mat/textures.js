@@ -1,28 +1,41 @@
-/** Texture di superficie generate una volta: cache, nuvole delle pareti, grana, marmo, klinker. */
-import { rng, vnoise, rgb, fillPixels, fillPixelsG, drain, makeCanvas, meanSrgb, srgbToLinear, drawVeins, hash2 } from './noise.js'
+/** Texture di superficie generate una volta: cache, velatura e intonaco delle pareti, legno, marmo, trama dei tessuti. */
+import { rng, vnoise, rgb, fillPixels, fillPixelsG, drain, makeCanvas, meanSrgb, srgbToLinear, linearToSrgb, drawVeins, hash2 } from './noise.js'
+import { normalMap } from './relief.js'
 
-/** Metri coperti da una ripetizione della texture delle pareti (nuvole) e di quella fine. */
-export const CLOUD_METERS = 4
+/** Metri coperti da una ripetizione della velatura (lungo il muro, in altezza) e della grana fine. */
+export const CLOUD_METERS = [16, 4]
 export const FINE_METERS = 1
+/** Grigio medio (lineare) delle mappe che modulano il colore: alto, così la compensazione non satura il colore. */
+const MID = 0.86
 
 /**
  * Cache di texture per chiave. `sweep` libera dalla GPU quelle non più usate, ma le tiene in memoria:
- * se servono di nuovo vengono ricaricate senza ridisegnare il canvas.
+ * se servono di nuovo vengono ricaricate senza ridisegnare il canvas. Il rilievo di una mappa di colore
+ * (`userData.normalMap`, `userData.roughnessMap`) segue la stessa sorte.
  */
 export function createStore() {
   const map = new Map()
+  const ms = {} // millisecondi spesi a generare ogni texture nel momento della richiesta (per `ctx.debug.mat`)
   return {
     /** Restituisce la texture in cache o la crea con `make()`. */
     get(key, make) {
       let t = map.get(key)
-      if (!t) { t = make(); map.set(key, t) }
+      if (!t) {
+        const t0 = performance.now()
+        t = make()
+        ms[key.slice(0, 40)] = Math.round(performance.now() - t0)
+        map.set(key, t)
+      }
       return t
     },
+    ms,
     has: (key) => map.has(key),
     set: (key, t) => { map.set(key, t) },
-    /** `dispose()` di ogni texture che non è nell'insieme `used`. */
+    /** `dispose()` di ogni texture (e del suo rilievo) che non è nell'insieme `used`. */
     sweep(used) {
-      for (const t of map.values()) if (!used.has(t)) t.dispose()
+      for (const t of map.values()) {
+        for (const x of [t, t.userData.normalMap, t.userData.roughnessMap]) if (x && !used.has(x)) x.dispose()
+      }
     },
     size: () => map.size,
   }
@@ -32,10 +45,18 @@ export function createStore() {
  * Trasforma un canvas in texture: sRGB, ripetizione, anisotropia.
  * @param {object} THREE
  * @param {HTMLCanvasElement} canvas
- * @param {{ meters?: number|[number, number], aniso?: number, gray?: number }} o `meters`: lato reale coperto
- *   (1 unità UV = 1 m, quindi repeat = 1 / meters); `gray`: media sRGB per compensare il colore (userData.gain).
+ * @param {{ meters?: number|[number, number], aniso?: number, gray?: number, albedo?: boolean }} o `meters`: lato reale
+ *   coperto (1 unità UV = 1 m, quindi repeat = 1 / meters); `gray`: media sRGB per compensare il colore
+ *   (userData.gain); `albedo`: il canvas porta il colore vero, i bianchi si fermano a 0,85 lineare.
  */
 export function canvasTexture(THREE, canvas, o = {}) {
+  if (o.albedo) {
+    const g = canvas.getContext('2d')
+    g.globalCompositeOperation = 'darken' // minimo canale per canale: 237 = 0,85 lineare
+    g.fillStyle = '#ededed'
+    g.fillRect(0, 0, canvas.width, canvas.height)
+    g.globalCompositeOperation = 'source-over'
+  }
   const t = new THREE.CanvasTexture(canvas)
   t.colorSpace = THREE.SRGBColorSpace
   t.wrapS = t.wrapT = THREE.RepeatWrapping
@@ -61,42 +82,31 @@ function cloud(u, v, seed, cells) {
 }
 
 /**
- * Terre Fiorentine: nuvole larghe 0,6-1,2 m (periodo 4 m) con velo di pennellate larghe.
- * Il grigio centrale lascia spazio al contrasto: il colore della stanza si moltiplica sulla mappa.
- * @param {object} THREE @param {number} variant 0..2 @param {number} contrast da `wallFinish.contrast`
+ * Terre Fiorentine: velatura morbida a nuvola, bassa frequenza (macchie di 0,7-1,3 m) e basso contrasto
+ * (luminanza entro ±6 %), senza direzione dominante. Una ripetizione copre 16 m di muro per 4 m di altezza:
+ * nessuna parete della casa la vede due volte. Il colore della stanza si moltiplica sulla mappa.
+ * @param {object} THREE @param {number} contrast da `wallFinish.contrast`
  */
-export function* wallCloudG(THREE, variant, contrast) {
-  const N = 512
-  const cv = makeCanvas(N, N)
-  const amp = contrast * 0.6
-  const center = 0.935
-  yield* fillPixelsG(cv, (x, y, out) => {
-    const n = cloud(x / N, y / N, 100 + variant * 31, 4)
-    const g = (center + (n - 0.5) * 1.8 * amp) * 255
-    out[0] = out[1] = out[2] = g
+export function* wallCloudG(THREE, contrast) {
+  const W = 1024, H = 256, PPM = W / CLOUD_METERS[0]
+  const cv = makeCanvas(W, H)
+  const amp = Math.min(0.06, contrast * 0.5)
+  const img = yield* fillPixelsG(cv, (x, y, out) => {
+    const u = x / PPM, v = y / PPM // metri
+    // una deformazione lenta scioglie l'allineamento al reticolo del rumore
+    const a = u + (vnoise(u * 0.5, v * 0.5, 8, 11, 2) - 0.5)
+    const b = v + (vnoise(u * 0.5, v * 0.5, 8, 12, 2) - 0.5)
+    const n = vnoise(a * 0.75, b * 0.75, 12, 21, 3) * 0.55 + vnoise(a * 1.5, b * 1.5, 24, 22, 6) * 0.3 + vnoise(a * 3, b * 3, 48, 23, 12) * 0.15
+    const t = (n - 0.5) * 4.2
+    const k = t / Math.sqrt(1 + t * t) // limite morbido: mai oltre ±amp, senza piatti
+    // il rumore di mezzo livello evita le curve di livello degli 8 bit sulle sfumature lente
+    out[0] = out[1] = out[2] = linearToSrgb(MID * (1 + amp * k)) * 255 + hash2(x, y, 5) - 0.5
   })
-  // velo di pennellate larghe incrociate, appena visibili
-  const rand = rng(900 + variant)
-  const g = cv.g
-  g.lineCap = 'butt'
-  for (let i = 0; i < 70; i++) {
-    const x = rand() * N, y = rand() * N, ang = (rand() < 0.5 ? 0.55 : -0.5) + (rand() - 0.5) * 0.4
-    const len = 120 + rand() * 220
-    g.lineWidth = 10 + rand() * 20
-    g.strokeStyle = rand() < 0.5 ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.018)'
-    for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) {
-      g.beginPath()
-      g.moveTo(x + ox * N, y + oy * N)
-      g.lineTo(x + ox * N + Math.cos(ang) * len, y + oy * N + Math.sin(ang) * len)
-      g.stroke()
-    }
-  }
-  const mean = meanSrgb(g.getImageData(0, 0, N, N))
-  return canvasTexture(THREE, cv.canvas, { meters: CLOUD_METERS, gray: mean, aniso: 4 })
+  return canvasTexture(THREE, cv.canvas, { meters: CLOUD_METERS, gray: meanSrgb(img), aniso: 2 })
 }
 
 /** Versione sincrona di `wallCloudG`. */
-export const wallCloud = (THREE, variant, contrast) => drain(wallCloudG(THREE, variant, contrast))
+export const wallCloud = (THREE, contrast) => drain(wallCloudG(THREE, contrast))
 
 /** Grana finissima (±1,5 %) per pittura liscia e intonaco: periodo 1 m. */
 export function fineNoise(THREE) {
@@ -109,36 +119,49 @@ export function fineNoise(THREE) {
   return canvasTexture(THREE, cv.canvas, { meters: FINE_METERS, gray: meanSrgb(img), aniso: 2 })
 }
 
-/** Venatura del legno: bande longitudinali (asse v), qualche nodo. Moltiplica il colore del token. */
-export function woodGrain(THREE) {
-  const W = 512, H = 512
-  const cv = makeCanvas(W, H)
-  // le UV dei mobili coprono l'intera faccia (non 1 m): per non vedere onde larghe le fibre sono fitte e poco ondulate
-  fillPixels(cv, (x, y, out) => {
-    const u = x / W, v = y / H
-    const warp = vnoise(u * 3, v * 2, 0, 5) * 0.5
-    const band = Math.sin((u * 90 + warp * 3 + vnoise(u * 16, v * 5, 0, 9) * 0.8) * Math.PI)
-    const fine = vnoise(u * 220, v * 6, 0, 21)
-    const g = 0.92 + 0.035 * band + 0.05 * (fine - 0.5)
-    out[0] = out[1] = out[2] = Math.min(1, g) * 255
-  })
-  const rand = rng(77)
-  for (let k = 0; k < 3; k++) {
-    const x = rand() * W, y = rand() * H
-    const gr = cv.g.createRadialGradient(x, y, 0, x, y, 16 + rand() * 12)
-    gr.addColorStop(0, 'rgba(40,25,10,0.28)'); gr.addColorStop(1, 'rgba(40,25,10,0)')
-    cv.g.fillStyle = gr
-    cv.g.save(); cv.g.translate(x, y); cv.g.scale(0.45, 1.6); cv.g.translate(-x, -y)
-    cv.g.fillRect(x - 40, y - 40, 80, 80)
-    cv.g.restore()
+/**
+ * Intonaco: normalMap finissima condivisa da pareti, soffitti e facciata. Ondulazione lenta della stesura
+ * (decimi di millimetro su 10-25 cm) e grana minuta: si legge appena, in luce radente.
+ */
+export function plasterNormal(THREE) {
+  const N = 512, M = 2.1
+  const hm = new Float32Array(N * N)
+  for (let y = 0, i = 0; y < N; y++) for (let x = 0; x < N; x++, i++) {
+    const u = x / N, v = y / N
+    hm[i] = 0.00035 * vnoise(u * 9, v * 9, 9, 31) + 0.00016 * vnoise(u * 28, v * 28, 28, 32)
+      + 0.00007 * vnoise(u * 110, v * 110, 110, 33) + 0.00003 * hash2(x, y, 34)
   }
-  const mean = meanSrgb(cv.g.getImageData(0, 0, W, H))
-  return canvasTexture(THREE, cv.canvas, { gray: mean, aniso: 4 })
+  // periodi diversi lungo il muro e in altezza: la ripetizione non cade mai allineata
+  return normalMap(THREE, hm, N, N, M, M, { repeat: [1 / M, 1 / 1.7], aniso: 2 })
 }
 
 /**
- * Marmo: colore pieno con nuvola e venature chiare o scure (secondo il fondo). Colore già dentro il canvas:
- * il materiale resta bianco. @param {string} hex colore base
+ * Legno dei mobili: fibre fini allungate lungo v, striature e qualche fiamma morbida, contrasto entro ±8 %
+ * di luminanza. Moltiplica il colore del token; `userData.normalMap` è la sua venatura in leggerissimo rilievo.
+ * Le UV dei mobili coprono l'intera faccia (non 1 m): il disegno regge sia stirato su un piano sia stretto su una gamba.
+ */
+export function woodGrain(THREE) {
+  const N = 512
+  const cv = makeCanvas(N, N)
+  const hm = new Float32Array(N * N)
+  const img = fillPixels(cv, (x, y, out) => {
+    const u = x / N, v = y / N
+    const a = u + (vnoise(u * 3, v * 2, 3, 25, 2) - 0.5) * 0.05 // le fibre non sono mai dritte
+    const f1 = vnoise(a * 180, v * 5, 180, 21, 5) - 0.5 // fibre fini
+    const f2 = vnoise(a * 48, v * 3, 48, 22, 3) - 0.5 // striature
+    const f3 = vnoise(a * 12 + vnoise(a * 3, v * 2, 3, 24, 2) * 2.5, v * 2, 12, 23, 2) - 0.5 // fiamme larghe
+    const k = Math.max(-0.08, Math.min(0.08, 0.07 * f1 + 0.06 * f2 + 0.07 * f3))
+    out[0] = out[1] = out[2] = linearToSrgb(MID * (1 + k)) * 255
+    hm[y * N + x] = 0.00004 * f1 + 0.00002 * f2
+  })
+  const t = canvasTexture(THREE, cv.canvas, { gray: meanSrgb(img), aniso: 4 })
+  t.userData.normalMap = normalMap(THREE, hm, N, N, 0.6, 0.6, { aniso: 4 })
+  return t
+}
+
+/**
+ * Marmo e pietra dei piani: colore pieno con nuvola leggera e venature fini, chiare o scure secondo il fondo.
+ * Colore già dentro il canvas: il materiale resta bianco. @param {string} hex colore base
  */
 export function* marbleG(THREE, hex, seed = 1) {
   const N = 512
@@ -146,45 +169,44 @@ export function* marbleG(THREE, hex, seed = 1) {
   const cv = makeCanvas(N, N)
   const img = yield* fillPixelsG(cv, (x, y, out) => {
     const n = cloud(x / N, y / N, seed, 3)
-    const k = 1 + (n - 0.5) * 0.12
+    const k = 1 + (n - 0.5) * 0.09
     out[0] = Math.min(255, base[0] * k); out[1] = Math.min(255, base[1] * k); out[2] = Math.min(255, base[2] * k)
   })
-  drawVeins(cv.g, img, N, rng(seed * 13 + 5), {
-    count: 22, len: 260, width: 1.5, light: 'rgba(255,255,255,0.55)', dark: 'rgba(70,72,76,0.4)',
-  })
-  return canvasTexture(THREE, cv.canvas, { aniso: 4 })
+  const rand = rng(seed * 13 + 5)
+  drawVeins(cv.g, img, N, rand, { count: 9, len: 420, width: 1.1, light: 'rgba(255,255,255,0.42)', dark: 'rgba(70,72,76,0.3)' })
+  drawVeins(cv.g, img, N, rand, { count: 34, len: 170, width: 0.55, light: 'rgba(255,255,255,0.34)', dark: 'rgba(70,72,76,0.24)' })
+  return canvasTexture(THREE, cv.canvas, { aniso: 4, albedo: true })
 }
 
 /** Versione sincrona di `marbleG`. */
 export const marble = (THREE, hex, seed = 1) => drain(marbleG(THREE, hex, seed))
 
+let weave = null
+/** Metri coperti dalla trama: 64 fili da 1,2 mm. */
+export const WEAVE_METERS = 0.077
+
 /**
- * Klinker: listelli verticali rigati 24 x 48 cm, in bruno con tono variabile e fughe scure.
- * Cella 4 x 2 listelli (0,96 x 0,96 m): 1 unità UV = 1 m.
- * @param {string} hex colore base @param {{ribs:number, tile:[number, number]}} def
+ * Trama dei tessuti: normalMap di una tela (64 fili per lato, ordito e trama che si scavalcano) su una stoffa
+ * che non è mai tesa del tutto: una lieve ondulazione di qualche centimetro resta leggibile anche da lontano,
+ * dove i fili non si distinguono più. Una sola per tutti i tessuti: ogni uso ne regola la scala con una copia
+ * (`fitRepeat`) e la forza con `relief`.
  */
-export function klinker(THREE, hex, def) {
-  const [tw, th] = def.tile
-  const cols = 4, rows = 2
-  const wM = tw * cols, hM = th * rows
-  const ppm = 1024 / Math.max(wM, hM)
-  const cv = makeCanvas(Math.round(wM * ppm), Math.round(hM * ppm))
-  const base = rgb(hex)
-  fillPixels(cv, (x, y, out) => {
-    const mx = x / ppm, my = y / ppm
-    const ci = Math.floor(mx / tw), ri = Math.floor(my / th)
-    const lx = mx - ci * tw, ly = my - ri * th
-    const tone = 0.88 + hash2(ci, ri, 31) * 0.24
-    // rigatura: ogni costola è un profilo smussato, chiaro a sinistra e scuro a destra
-    const rib = (lx % def.ribs) / def.ribs
-    const shade = 1.08 - 0.3 * rib * rib
-    const grain = 0.96 + hash2(x, y, 4) * 0.08
-    const edge = Math.min(lx, tw - lx, ly, th - ly)
-    let k = tone * shade * grain
-    if (edge < 0.0045) k *= 0.35
-    out[0] = Math.min(255, base[0] * k); out[1] = Math.min(255, base[1] * k); out[2] = Math.min(255, base[2] * k)
-  })
-  return canvasTexture(THREE, cv.canvas, { meters: [wM, hM], aniso: 4 })
+export function weaveNormal(THREE) {
+  if (weave) return weave
+  const N = 512, T = 64
+  const hm = new Float32Array(N * N)
+  for (let y = 0, k = 0; y < N; y++) for (let x = 0; x < N; x++, k++) {
+    const u = x / N, v = y / N
+    const fx = u * T, fy = v * T
+    const i = Math.floor(fx), j = Math.floor(fy)
+    const sx = Math.sin(Math.PI * (fx - i)), sy = Math.sin(Math.PI * (fy - j))
+    const p = (i + j) & 1 ? 1 : -1 // quale dei due fili passa sopra in questo incrocio
+    const warp = sx * (0.5 + 0.5 * p * sy) * (0.8 + 0.4 * hash2(i, 0, 41))
+    const weft = sy * (0.5 - 0.5 * p * sx) * (0.8 + 0.4 * hash2(0, j, 42))
+    hm[k] = 0.00012 * Math.max(warp, weft) + 0.0005 * vnoise(u * 5, v * 5, 5, 43) + 0.0002 * vnoise(u * 13, v * 13, 13, 44)
+  }
+  weave = normalMap(THREE, hm, N, N, WEAVE_METERS, WEAVE_METERS, { aniso: 2 })
+  return weave
 }
 
 /**

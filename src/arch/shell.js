@@ -44,8 +44,8 @@ export function init(ctx) {
   const capB = new Batch(), sillB = new Batch()
   for (const c of grid.caps()) {
     if (!c.up) slot(fixedB, 'trim').flat(c.rect, c.y, false)
-    // Tetto dell'edificio confinante: intonaco chiaro, non il nero delle sezioni di muro (dall'alto era una lastra nera).
-    else if (c.solid && c.solid.kind === K.CONTEXT) slot(fixedB, 'context').flat(c.rect, c.y, true)
+    // Tetto dell'edificio confinante: lastrico grigio, non il nero delle sezioni di muro (dall'alto era una lastra nera).
+    else if (c.solid && c.solid.kind === K.CONTEXT) slot(fixedB, 'contextRoof').flat(c.rect, c.y, true)
     else if (c.y >= H - EPS) capB.flat(c.rect, c.y, true)
     else sillB.flat(c.rect, c.y, true)
   }
